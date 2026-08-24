@@ -12,7 +12,7 @@ public struct MainView: View {
         Group {
             if !windowManager.isExpanded {
                 CollapsedTabView(windowManager: windowManager)
-                    .transition(.opacity.combined(with: .scale(0.95)))
+                    .transition(AnyTransition.opacity.combined(with: .scale))
             } else {
                 VStack(spacing: 0) {
                     // Header
@@ -35,7 +35,7 @@ public struct MainView: View {
                                 noteStore.searchQuery = ""
                             }
                         }
-                        .transition(.move(edge: .top).combined(with: .opacity))
+                        .transition(AnyTransition.move(edge: .top).combined(with: .opacity))
                     }
 
                     Divider()
@@ -53,7 +53,7 @@ public struct MainView: View {
                                     }
                                 }
                             )
-                            .transition(.scale(0.96).combined(with: .opacity))
+                            .transition(AnyTransition.opacity.combined(with: .scale))
                         } else if isEditingNote, let selectedNote = bindingForSelectedNote() {
                             NoteEditorView(
                                 note: selectedNote,
@@ -62,8 +62,8 @@ public struct MainView: View {
                                 }
                             )
                             .transition(.asymmetric(
-                                insertion: .move(edge: .trailing).combined(with: .opacity),
-                                removal: .move(edge: .trailing).combined(with: .opacity)
+                                insertion: AnyTransition.move(edge: .trailing).combined(with: .opacity),
+                                removal: AnyTransition.move(edge: .trailing).combined(with: .opacity)
                             ))
                         } else {
                             NoteListView(
@@ -76,8 +76,8 @@ public struct MainView: View {
                                 }
                             )
                             .transition(.asymmetric(
-                                insertion: .move(edge: .leading).combined(with: .opacity),
-                                removal: .move(edge: .leading).combined(with: .opacity)
+                                insertion: AnyTransition.move(edge: .leading).combined(with: .opacity),
+                                removal: AnyTransition.move(edge: .leading).combined(with: .opacity)
                             ))
                         }
                     }
@@ -93,7 +93,7 @@ public struct MainView: View {
                 )
                 .shadow(color: Color.black.opacity(0.22), radius: 14, x: 2, y: 5)
                 .padding(4)
-                .transition(.scale.combined(with: .opacity))
+                .transition(AnyTransition.opacity.combined(with: .scale))
             }
         }
         .animation(.spring(response: 0.26, dampingFraction: 0.82), value: windowManager.isExpanded)
