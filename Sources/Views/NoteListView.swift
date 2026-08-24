@@ -27,34 +27,31 @@ public struct NoteListView: View {
     public var body: some View {
         VStack(spacing: 0) {
             // Folder-style Tab Bar matching reference image
-            HStack(spacing: -6) {
-                FolderTabButton(
+            HStack(spacing: 3) {
+                CleanFolderTabButton(
                     title: "Items",
                     iconName: "doc.text.fill",
-                    isSelected: selectedTab == "Items",
-                    isFirst: true
+                    isSelected: selectedTab == "Items"
                 ) {
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         selectedTab = "Items"
                     }
                 }
 
-                FolderTabButton(
+                CleanFolderTabButton(
                     title: "Notebooks",
                     iconName: "book.closed.fill",
-                    isSelected: selectedTab == "Notebooks",
-                    isFirst: false
+                    isSelected: selectedTab == "Notebooks"
                 ) {
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         selectedTab = "Notebooks"
                     }
                 }
 
-                FolderTabButton(
+                CleanFolderTabButton(
                     title: "Canvases",
                     iconName: "square.grid.2x2.fill",
-                    isSelected: selectedTab == "Canvases",
-                    isFirst: false
+                    isSelected: selectedTab == "Canvases"
                 ) {
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         selectedTab = "Canvases"
@@ -85,7 +82,7 @@ public struct NoteListView: View {
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
-                .padding(.trailing, 12)
+                .padding(.trailing, 10)
             }
             .padding(.leading, 10)
             .padding(.top, 4)
@@ -196,12 +193,11 @@ public struct NoteListView: View {
     }
 }
 
-// Custom Folder Tab Button matching reference image exactly
-struct FolderTabButton: View {
+// Clean Folder Tab Button with rounded top edges matching reference image
+struct CleanFolderTabButton: View {
     let title: String
     let iconName: String
     let isSelected: Bool
-    let isFirst: Bool
     let action: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
@@ -225,12 +221,11 @@ struct FolderTabButton: View {
                             : (isSelected ? Color(red: 0.22, green: 0.17, blue: 0.12) : Color(red: 0.42, green: 0.35, blue: 0.28))
                     )
             }
-            .padding(.leading, isFirst ? 14 : 16)
-            .padding(.trailing, 18)
-            .padding(.top, 8)
-            .padding(.bottom, 7)
+            .padding(.horizontal, 14)
+            .padding(.top, 7)
+            .padding(.bottom, 6)
             .background(
-                ExactFolderTabShape(isFirst: isFirst)
+                RoundedCornerShape(radius: 10, corners: [.topLeft, .topRight])
                     .fill(
                         isSelected
                             ? (colorScheme == .dark ? Color(red: 0.22, green: 0.20, blue: 0.18) : Color(red: 0.96, green: 0.94, blue: 0.89))
@@ -238,7 +233,7 @@ struct FolderTabButton: View {
                     )
             )
             .overlay(
-                ExactFolderTabShape(isFirst: isFirst)
+                RoundedCornerShape(radius: 10, corners: [.topLeft, .topRight])
                     .stroke(
                         isSelected
                             ? Color.primary.opacity(0.18)
@@ -246,90 +241,50 @@ struct FolderTabButton: View {
                         lineWidth: 0.75
                     )
             )
+            .shadow(
+                color: isSelected ? Color.black.opacity(0.06) : Color.clear,
+                radius: 2,
+                x: 0,
+                y: -1
+            )
         }
         .buttonStyle(PlainButtonStyle())
-        .zIndex(isSelected ? 10 : 1)
     }
 }
 
-// 100% Exact Folder Tab Geometry matching reference image
-struct ExactFolderTabShape: Shape {
-    var isFirst: Bool
+// Rounded Corner Shape for clean tab corners
+struct RoundedCornerShape: Shape {
+    var radius: CGFloat = 10
+    var corners: RectCorner = [.topLeft, .topRight]
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let topRadius: CGFloat = 12
-        let bottomFilletRadius: CGFloat = 10
+        let tl = corners.contains(.topLeft) ? radius : 0
+        let tr = corners.contains(.topRight) ? radius : 0
 
-        if isFirst {
-            // Start at bottom-left corner
-            path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
-
-            // Vertical left edge up to top-left corner
-            path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + topRadius))
-
-            // Top-left convex arc
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + tl))
+        if tl > 0 {
             path.addArc(
-                center: CGPoint(x: rect.minX + topRadius, y: rect.minY + topRadius),
-                radius: topRadius,
-                startAngle: .degrees(180),
-                endAngle: .degrees(270),
-                clockwise: false
-            )
-        } else {
-            // Start before bottom-left concave fillet
-            path.move(to: CGPoint(x: rect.minX - bottomFilletRadius, y: rect.maxY))
-
-            // Concave bottom-left fillet curve turning upwards into tab
-            path.addArc(
-                center: CGPoint(x: rect.minX, y: rect.maxY - bottomFilletRadius),
-                radius: bottomFilletRadius,
-                startAngle: .degrees(90),
-                endAngle: .degrees(180),
-                clockwise: true
-            )
-
-            // Vertical left edge up to top-left corner
-            path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + topRadius))
-
-            // Top-left convex arc
-            path.addArc(
-                center: CGPoint(x: rect.minX + topRadius, y: rect.minY + topRadius),
-                radius: topRadius,
+                center: CGPoint(x: rect.minX + tl, y: rect.minY + tl),
+                radius: tl,
                 startAngle: .degrees(180),
                 endAngle: .degrees(270),
                 clockwise: false
             )
         }
-
-        // Top horizontal line
-        path.addLine(to: CGPoint(x: rect.maxX - topRadius, y: rect.minY))
-
-        // Top-right convex arc
-        path.addArc(
-            center: CGPoint(x: rect.maxX - topRadius, y: rect.minY + topRadius),
-            radius: topRadius,
-            startAngle: .degrees(270),
-            endAngle: .degrees(360),
-            clockwise: false
-        )
-
-        // Vertical right edge down to bottom fillet
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - bottomFilletRadius))
-
-        // Concave bottom-right fillet curve turning rightwards along baseline
-        path.addArc(
-            center: CGPoint(x: rect.maxX + bottomFilletRadius, y: rect.maxY - bottomFilletRadius),
-            radius: bottomFilletRadius,
-            startAngle: .degrees(180),
-            endAngle: .degrees(90),
-            clockwise: true
-        )
-
-        // Close path along baseline
-        path.addLine(to: CGPoint(x: isFirst ? rect.minX : rect.minX - bottomFilletRadius, y: rect.maxY))
+        path.addLine(to: CGPoint(x: rect.maxX - tr, y: rect.minY))
+        if tr > 0 {
+            path.addArc(
+                center: CGPoint(x: rect.maxX - tr, y: rect.minY + tr),
+                radius: tr,
+                startAngle: .degrees(270),
+                endAngle: .degrees(360),
+                clockwise: false
+            )
+        }
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
         path.closeSubpath()
-
         return path
     }
 }
