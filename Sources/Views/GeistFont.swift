@@ -13,6 +13,11 @@ public extension Font {
             fontName = "Geist-Regular"
         }
 
-        return Font.custom(fontName, size: size).fallback(Font.system(size: size, weight: weight, design: .default))
+        if NSFont(name: fontName, size: size) != nil {
+            return Font.custom(fontName, size: size)
+        } else if NSFont(name: "Geist", size: size) != nil {
+            return Font.custom("Geist", size: size)
+        }
+        return Font.system(size: size, weight: weight, design: .default)
     }
 }
