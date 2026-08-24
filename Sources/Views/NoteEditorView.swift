@@ -25,12 +25,12 @@ public struct NoteEditorView: View {
         VStack(spacing: 8) {
             // Color picker & desktop pin toolbar
             HStack {
-                // Color dots
+                // Color dots matching reference image
                 HStack(spacing: 6) {
                     ForEach(NoteColor.allCases, id: \.self) { c in
                         Circle()
                             .fill(colorScheme == .dark ? c.darkColor : c.lightColor)
-                            .frame(width: 13, height: 13)
+                            .frame(width: 14, height: 14)
                             .overlay(
                                 Circle()
                                     .stroke(note.color == c ? Color.primary.opacity(0.6) : Color.clear, lineWidth: 1.5)
@@ -61,7 +61,7 @@ public struct NoteEditorView: View {
                     .padding(.vertical, 4)
                     .background(
                         RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.accentColor.opacity(0.1))
+                            .fill(Color.accentColor.opacity(0.12))
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -70,7 +70,7 @@ public struct NoteEditorView: View {
             .padding(.horizontal, 16)
             .padding(.top, 6)
 
-            // Optional title field
+            // Serif Title Field matching reference image headline font
             TextField("Title (optional)", text: Binding(
                 get: { note.title },
                 set: { newTitle in
@@ -78,7 +78,7 @@ public struct NoteEditorView: View {
                     onNoteChanged(note)
                 }
             ))
-            .font(.geist(16, weight: .bold))
+            .font(.system(size: 18, weight: .bold, design: .serif))
             .textFieldStyle(PlainTextFieldStyle())
             .focused($isTitleFocused)
             .padding(.horizontal, 16)
@@ -103,12 +103,12 @@ public struct NoteEditorView: View {
             .padding(.bottom, 12)
         }
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .fill(paperColor.opacity(0.85))
+            RoundedRectangle(cornerRadius: 12)
+                .fill(paperColor)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(note.color.accentBorder.opacity(0.4), lineWidth: 0.75)
+            RoundedRectangle(cornerRadius: 12)
+                .stroke(note.color.accentBorder.opacity(0.5), lineWidth: 0.8)
         )
         .padding(8)
         .onAppear {

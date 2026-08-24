@@ -5,8 +5,15 @@ public struct MainView: View {
     @StateObject var windowManager = WindowManager.shared
 
     @State private var isEditingNote: Bool = false
+    @Environment(\.colorScheme) private var colorScheme
 
     public init() {}
+
+    private var parchmentBackground: Color {
+        colorScheme == .dark
+            ? Color(red: 0.12, green: 0.11, blue: 0.10)
+            : Color(red: 0.97, green: 0.96, blue: 0.93)
+    }
 
     public var body: some View {
         Group {
@@ -39,7 +46,7 @@ public struct MainView: View {
                     }
 
                     Divider()
-                        .opacity(0.1)
+                        .opacity(0.12)
 
                     // Content Body
                     ZStack {
@@ -84,15 +91,13 @@ public struct MainView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .background(
-                    VisualEffectView(material: .hudWindow, blendingMode: .withinWindow, state: .active)
-                )
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .background(parchmentBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 14))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color.primary.opacity(0.12), lineWidth: 0.75)
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.75)
                 )
-                .shadow(color: Color.black.opacity(0.22), radius: 14, x: 2, y: 5)
+                .shadow(color: Color.black.opacity(0.18), radius: 14, x: 2, y: 5)
                 .padding(4)
                 .transition(AnyTransition.opacity.combined(with: .scale))
             }

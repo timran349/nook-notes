@@ -20,107 +20,118 @@ public struct HeaderView: View {
     }
 
     public var body: some View {
-        HStack(spacing: 12) {
-            if isEditing {
-                Button(action: onBack) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 11, weight: .bold))
-                        Text("Notes")
-                            .font(.geist(13, weight: .medium))
-                    }
-                    .foregroundColor(.secondary)
-                    .contentShape(Rectangle())
-                }
-                .buttonStyle(HeaderIconButtonStyle())
-            } else {
-                HStack(spacing: 6) {
-                    Image(systemName: "line.3.horizontal")
-                        .font(.system(size: 10, weight: .bold))
-                        .foregroundColor(.secondary.opacity(0.5))
-                        .help("Drag to move Nook")
-
-                    Text("Nook")
-                        .font(.geist(15, weight: .bold))
-                        .foregroundColor(.primary.opacity(0.9))
-                }
-            }
-
-            Spacer()
-
-            if !isEditing {
-                // Search button
-                Button(action: {
-                    withAnimation(.spring(response: 0.2, dampingFraction: 0.75)) {
-                        noteStore.isSearching.toggle()
-                        if !noteStore.isSearching {
-                            noteStore.searchQuery = ""
+        VStack(spacing: 8) {
+            // Top Breadcrumb & Actions Bar
+            HStack(spacing: 10) {
+                if isEditing {
+                    Button(action: onBack) {
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 11, weight: .bold))
+                            Text("Sticky Notes")
+                                .font(.geist(12, weight: .medium))
                         }
+                        .foregroundColor(.secondary)
+                        .contentShape(Rectangle())
                     }
-                }) {
-                    Image(systemName: "magnifyingglass")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(noteStore.isSearching ? .accentColor : .secondary)
-                }
-                .buttonStyle(HeaderIconButtonStyle())
+                    .buttonStyle(HeaderIconButtonStyle())
+                } else {
+                    // Breadcrumb style matching reference image ("My Library / Sticky Notes")
+                    HStack(spacing: 5) {
+                        Text("My Library")
+                            .font(.geist(11, weight: .medium))
+                            .foregroundColor(.secondary)
 
-                // New note button
+                        Text("/")
+                            .font(.geist(11, weight: .regular))
+                            .foregroundColor(.secondary.opacity(0.5))
+
+                        Circle()
+                            .fill(Color.blue.opacity(0.8))
+                            .frame(width: 6, height: 6)
+
+                        Text("Sticky Notes")
+                            .font(.system(size: 16, weight: .bold, design: .serif))
+                            .foregroundColor(.primary.opacity(0.9))
+                    }
+                }
+
+                Spacer()
+
+                if !isEditing {
+                    // Search button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.2, dampingFraction: 0.75)) {
+                            noteStore.isSearching.toggle()
+                            if !noteStore.isSearching {
+                                noteStore.searchQuery = ""
+                            }
+                        }
+                    }) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(noteStore.isSearching ? .accentColor : .secondary)
+                    }
+                    .buttonStyle(HeaderIconButtonStyle())
+
+                    // New note button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                            let newNote = noteStore.createNote()
+                            noteStore.selectedNoteId = newNote.id
+                        }
+                    }) {
+                        Image(systemName: "square.and.pencil")
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.primary.opacity(0.85))
+                    }
+                    .buttonStyle(HeaderIconButtonStyle())
+                    .help("New Note (Cmd+N)")
+                } else {
+                    // Delete active note button
+                    Button(action: {
+                        if let selectedId = noteStore.selectedNoteId {
+                            withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                                noteStore.deleteNote(id: selectedId)
+                                onBack()
+                            }
+                        }
+                    }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 12, weight: .regular))
+                            .foregroundColor(.secondary)
+                    }
+                    .buttonStyle(HeaderIconButtonStyle())
+                    .help("Delete Note (Cmd+Delete)")
+                }
+
+                // Settings button
                 Button(action: {
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
-                        let newNote = noteStore.createNote()
-                        noteStore.selectedNoteId = newNote.id
+                        windowManager.isSettingsPresented.toggle()
                     }
                 }) {
-                    Image(systemName: "square.and.pencil")
-                        .font(.system(size: 12, weight: .semibold))
-                        .foregroundColor(.primary.opacity(0.85))
-                }
-                .buttonStyle(HeaderIconButtonStyle())
-                .help("New Note (Cmd+N)")
-            } else {
-                // Delete active note button
-                Button(action: {
-                    if let selectedId = noteStore.selectedNoteId {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                            noteStore.deleteNote(id: selectedId)
-                            onBack()
-                        }
-                    }
-                }) {
-                    Image(systemName: "trash")
+                    Image(systemName: "gearshape")
                         .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(windowManager.isSettingsPresented ? .accentColor : .secondary)
+                        .rotationEffect(.degrees(windowManager.isSettingsPresented ? 45 : 0))
                 }
                 .buttonStyle(HeaderIconButtonStyle())
-                .help("Delete Note (Cmd+Delete)")
-            }
 
-            // Settings button
-            Button(action: {
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
-                    windowManager.isSettingsPresented.toggle()
+                // Collapse button
+                Button(action: {
+                    windowManager.collapsePanel()
+                }) {
+                    Image(systemName: "chevron.down.square.fill")
+                        .font(.system(size: 13, weight: .medium))
+                        .foregroundColor(.secondary.opacity(0.6))
                 }
-            }) {
-                Image(systemName: "gearshape")
-                    .font(.system(size: 12, weight: .regular))
-                    .foregroundColor(windowManager.isSettingsPresented ? .accentColor : .secondary)
-                    .rotationEffect(.degrees(windowManager.isSettingsPresented ? 45 : 0))
+                .buttonStyle(HeaderIconButtonStyle())
+                .help("Collapse (Esc)")
             }
-            .buttonStyle(HeaderIconButtonStyle())
-
-            // Collapse button
-            Button(action: {
-                windowManager.collapsePanel()
-            }) {
-                Image(systemName: "chevron.down.square.fill")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(.secondary.opacity(0.6))
-            }
-            .buttonStyle(HeaderIconButtonStyle())
-            .help("Collapse (Esc)")
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 12)
+        .padding(.vertical, 10)
         .contentShape(Rectangle())
         .contextMenu {
             Button(action: {

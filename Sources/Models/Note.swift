@@ -2,39 +2,49 @@ import Foundation
 import SwiftUI
 
 public enum NoteColor: String, CaseIterable, Codable {
-    case yellow = "yellow"
-    case mint = "mint"
-    case peach = "peach"
-    case blue = "blue"
-    case lavender = "lavender"
+    case mint = "mint"         // Pistachio Green (#DCEBCA)
+    case lavender = "lavender" // Lavender Purple (#D5C9FA)
+    case yellow = "yellow"     // Butter Cream (#EFEAD4)
+    case peach = "peach"       // Warm Rose (#F7DBE3)
+    case blue = "blue"         // Sky Soft (#D7E6F8)
 
     public var lightColor: Color {
         switch self {
-        case .yellow: return Color(red: 0.99, green: 0.95, blue: 0.68)
-        case .mint: return Color(red: 0.86, green: 0.96, blue: 0.86)
-        case .peach: return Color(red: 1.0, green: 0.88, blue: 0.82)
-        case .blue: return Color(red: 0.87, green: 0.93, blue: 0.99)
-        case .lavender: return Color(red: 0.93, green: 0.89, blue: 0.99)
+        case .mint: return Color(red: 0.86, green: 0.92, blue: 0.79)
+        case .lavender: return Color(red: 0.84, green: 0.79, blue: 0.98)
+        case .yellow: return Color(red: 0.94, green: 0.92, blue: 0.83)
+        case .peach: return Color(red: 0.97, green: 0.86, blue: 0.89)
+        case .blue: return Color(red: 0.84, green: 0.90, blue: 0.97)
         }
     }
 
     public var darkColor: Color {
         switch self {
-        case .yellow: return Color(red: 0.26, green: 0.24, blue: 0.12)
-        case .mint: return Color(red: 0.12, green: 0.24, blue: 0.14)
-        case .peach: return Color(red: 0.28, green: 0.16, blue: 0.14)
-        case .blue: return Color(red: 0.12, green: 0.20, blue: 0.28)
-        case .lavender: return Color(red: 0.22, green: 0.16, blue: 0.28)
+        case .mint: return Color(red: 0.15, green: 0.22, blue: 0.12)
+        case .lavender: return Color(red: 0.17, green: 0.14, blue: 0.26)
+        case .yellow: return Color(red: 0.22, green: 0.20, blue: 0.13)
+        case .peach: return Color(red: 0.25, green: 0.14, blue: 0.17)
+        case .blue: return Color(red: 0.13, green: 0.19, blue: 0.26)
         }
     }
 
     public var accentBorder: Color {
         switch self {
-        case .yellow: return Color(red: 0.88, green: 0.82, blue: 0.40)
-        case .mint: return Color(red: 0.65, green: 0.85, blue: 0.65)
-        case .peach: return Color(red: 0.92, green: 0.70, blue: 0.62)
-        case .blue: return Color(red: 0.65, green: 0.80, blue: 0.92)
-        case .lavender: return Color(red: 0.78, green: 0.70, blue: 0.90)
+        case .mint: return Color(red: 0.72, green: 0.82, blue: 0.62)
+        case .lavender: return Color(red: 0.70, green: 0.62, blue: 0.93)
+        case .yellow: return Color(red: 0.82, green: 0.78, blue: 0.62)
+        case .peach: return Color(red: 0.88, green: 0.67, blue: 0.73)
+        case .blue: return Color(red: 0.66, green: 0.78, blue: 0.92)
+        }
+    }
+
+    public var tagLabel: String {
+        switch self {
+        case .mint: return "Pistachio"
+        case .lavender: return "Lavender"
+        case .yellow: return "Butter"
+        case .peach: return "Rose"
+        case .blue: return "Sky"
         }
     }
 }
@@ -53,7 +63,7 @@ public struct Note: Identifiable, Codable, Equatable, Hashable {
     public var updatedAt: Date
 
     public var color: NoteColor {
-        get { NoteColor(rawValue: colorRaw) ?? .yellow }
+        get { NoteColor(rawValue: colorRaw) ?? .mint }
         set { colorRaw = newValue.rawValue }
     }
 
@@ -61,7 +71,7 @@ public struct Note: Identifiable, Codable, Equatable, Hashable {
         id: UUID = UUID(),
         title: String = "",
         content: String = "",
-        color: NoteColor = .yellow,
+        color: NoteColor = .mint,
         isDetached: Bool = false,
         detachedX: CGFloat? = nil,
         detachedY: CGFloat? = nil,
@@ -83,7 +93,6 @@ public struct Note: Identifiable, Codable, Equatable, Hashable {
         self.updatedAt = updatedAt
     }
 
-    // Codable keys with default fallbacks for backwards compatibility
     enum CodingKeys: String, CodingKey {
         case id, title, content, colorRaw, isDetached, detachedX, detachedY, detachedWidth, detachedHeight, createdAt, updatedAt
     }
@@ -93,7 +102,7 @@ public struct Note: Identifiable, Codable, Equatable, Hashable {
         id = try container.decode(UUID.self, forKey: .id)
         title = try container.decode(String.self, forKey: .title)
         content = try container.decode(String.self, forKey: .content)
-        colorRaw = try container.decodeIfPresent(String.self, forKey: .colorRaw) ?? NoteColor.yellow.rawValue
+        colorRaw = try container.decodeIfPresent(String.self, forKey: .colorRaw) ?? NoteColor.mint.rawValue
         isDetached = try container.decodeIfPresent(Bool.self, forKey: .isDetached) ?? false
         detachedX = try container.decodeIfPresent(CGFloat.self, forKey: .detachedX)
         detachedY = try container.decodeIfPresent(CGFloat.self, forKey: .detachedY)
@@ -115,7 +124,7 @@ public struct Note: Identifiable, Codable, Equatable, Hashable {
         if let firstLine = lines.first {
             return firstLine
         }
-        return "Sticky Note"
+        return "Untitled Note"
     }
 
     /// Preview snippet for note rows
@@ -146,6 +155,13 @@ public struct Note: Identifiable, Codable, Equatable, Hashable {
         } else {
             return .older
         }
+    }
+
+    /// Year tag (e.g., "2026")
+    public var yearTag: String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy"
+        return formatter.string(from: updatedAt)
     }
 
     /// Short formatted timestamp
