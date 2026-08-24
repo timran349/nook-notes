@@ -13,8 +13,10 @@ public struct NoteListView: View {
 
     private var filteredNotesList: [Note] {
         var base = noteStore.filteredNotes
-        if selectedTab == "Floating" {
+        if selectedTab == "Notebooks" {
             base = base.filter { $0.isDetached }
+        } else if selectedTab == "Canvases" {
+            base = base.filter { $0.color == .lavender || $0.color == .mint }
         }
         if let colorFilter = selectedColorFilter {
             base = base.filter { $0.color == colorFilter }
@@ -23,24 +25,42 @@ public struct NoteListView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 10) {
-            // Folder-style Tab Bar matching reference image ("Items", "Notebooks", "Canvases")
-            HStack(spacing: 4) {
-                TabPillButton(title: "Items", count: noteStore.notes.count, isSelected: selectedTab == "Items") {
-                    withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+        VStack(spacing: 0) {
+            // Skewed File Folder Tab Bar matching reference image
+            HStack(spacing: -8) {
+                FolderTabButton(
+                    title: "Items",
+                    iconName: "doc.text.fill",
+                    isSelected: selectedTab == "Items"
+                ) {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         selectedTab = "Items"
                     }
                 }
 
-                TabPillButton(title: "Floating", count: noteStore.notes.filter { $0.isDetached }.count, isSelected: selectedTab == "Floating") {
-                    withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                        selectedTab = "Floating"
+                FolderTabButton(
+                    title: "Notebooks",
+                    iconName: "book.closed.fill",
+                    isSelected: selectedTab == "Notebooks"
+                ) {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                        selectedTab = "Notebooks"
+                    }
+                }
+
+                FolderTabButton(
+                    title: "Canvases",
+                    iconName: "square.grid.2x2.fill",
+                    isSelected: selectedTab == "Canvases"
+                ) {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                        selectedTab = "Canvases"
                     }
                 }
 
                 Spacer()
 
-                // "+ Add" Button matching reference image
+                // "+ Add" Button
                 Button(action: {
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         let newNote = noteStore.createNote()
@@ -48,100 +68,117 @@ public struct NoteListView: View {
                     }
                 }) {
                     HStack(spacing: 4) {
-                        Text("+ Add")
+                        Image(systemName: "plus")
+                            .font(.system(size: 10, weight: .bold))
+                        Text("Add")
                             .font(.geist(11, weight: .semibold))
                     }
                     .foregroundColor(.primary.opacity(0.85))
                     .padding(.horizontal, 9)
-                    .padding(.vertical, 4)
+                    .padding(.vertical, 5)
                     .background(
                         RoundedRectangle(cornerRadius: 6)
                             .fill(Color.primary.opacity(0.06))
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
+                .padding(.trailing, 12)
             }
-            .padding(.horizontal, 14)
-            .padding(.top, 2)
+            .padding(.leading, 12)
+            .padding(.top, 4)
+            .zIndex(1)
 
-            // Category Dots Filter Bar matching reference image
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 8) {
-                    // All filter dot
-                    FilterDotChip(
-                        label: "All",
-                        color: nil,
-                        count: noteStore.notes.count,
-                        isSelected: selectedColorFilter == nil
-                    ) {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                            selectedColorFilter = nil
-                        }
-                    }
-
-                    ForEach(NoteColor.allCases, id: \.self) { c in
-                        let count = noteStore.notes.filter { $0.color == c }.count
+            // Content Panel Frame connected seamlessly to active folder tab
+            VStack(spacing: 10) {
+                // Category Dots Filter Bar
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
                         FilterDotChip(
-                            label: c.tagLabel,
-                            color: c.accentBorder,
-                            count: count,
-                            isSelected: selectedColorFilter == c
+                            label: "All",
+                            color: nil,
+                            count: noteStore.notes.count,
+                            isSelected: selectedColorFilter == nil
                         ) {
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                                selectedColorFilter = selectedColorFilter == c ? nil : c
+                                selectedColorFilter = nil
+                            }
+                        }
+
+                        ForEach(NoteColor.allCases, id: \.self) { c in
+                            let count = noteStore.notes.filter { $0.color == c }.count
+                            FilterDotChip(
+                                label: c.tagLabel,
+                                color: c.accentBorder,
+                                count: count,
+                                isSelected: selectedColorFilter == c
+                            ) {
+                                withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                                    selectedColorFilter = selectedColorFilter == c ? nil : c
+                                }
                             }
                         }
                     }
+                    .padding(.horizontal, 14)
+                    .padding(.top, 10)
                 }
-                .padding(.horizontal, 14)
-            }
 
-            // Cards Scroll Grid
-            if filteredNotesList.isEmpty {
-                VStack(spacing: 12) {
-                    Spacer()
-                    Image(systemName: "note.text")
-                        .font(.system(size: 28, weight: .thin))
-                        .foregroundColor(.secondary.opacity(0.5))
+                // Cards List
+                if filteredNotesList.isEmpty {
+                    VStack(spacing: 12) {
+                        Spacer()
+                        Image(systemName: "note.text")
+                            .font(.system(size: 28, weight: .thin))
+                            .foregroundColor(.secondary.opacity(0.5))
 
-                    Text("No matching notes")
-                        .font(.geist(13, weight: .medium))
-                        .foregroundColor(.secondary)
+                        Text("No matching notes")
+                            .font(.geist(13, weight: .medium))
+                            .foregroundColor(.secondary)
 
-                    Spacer()
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            } else {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(alignment: .leading, spacing: 10) {
-                        ForEach(filteredNotesList) { note in
-                            NoteRowView(
-                                note: note,
-                                isSelected: noteStore.selectedNoteId == note.id,
-                                onSelect: {
-                                    noteStore.selectedNoteId = note.id
-                                    onSelectNote(note)
-                                },
-                                onDelete: {
-                                    withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                                        noteStore.deleteNote(id: note.id)
-                                    }
-                                },
-                                onRename: {
-                                    noteToRename = note
-                                    renameText = note.title
-                                    showRenameAlert = true
-                                },
-                                onDetach: {
-                                    DetachedStickyManager.shared.detachNote(note, noteStore: noteStore)
-                                }
-                            )
-                        }
+                        Spacer()
                     }
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 16)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            ForEach(filteredNotesList) { note in
+                                NoteRowView(
+                                    note: note,
+                                    isSelected: noteStore.selectedNoteId == note.id,
+                                    onSelect: {
+                                        noteStore.selectedNoteId = note.id
+                                        onSelectNote(note)
+                                    },
+                                    onDelete: {
+                                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                                            noteStore.deleteNote(id: note.id)
+                                        }
+                                    },
+                                    onRename: {
+                                        noteToRename = note
+                                        renameText = note.title
+                                        showRenameAlert = true
+                                    },
+                                    onDetach: {
+                                        DetachedStickyManager.shared.detachNote(note, noteStore: noteStore)
+                                    }
+                                )
+                            }
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 16)
+                    }
                 }
             }
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.primary.opacity(0.02))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.primary.opacity(0.08), lineWidth: 0.75)
+            )
+            .padding(.horizontal, 6)
+            .padding(.bottom, 6)
         }
         .alert("Rename Note", isPresented: $showRenameAlert) {
             TextField("Note Title", text: $renameText)
@@ -156,34 +193,95 @@ public struct NoteListView: View {
     }
 }
 
-// Tab Pill Button matching reference image tabs ("Items", "Notebooks", "Canvases")
-struct TabPillButton: View {
+// Custom Skewed File Folder Tab Button matching reference image exactly
+struct FolderTabButton: View {
     let title: String
-    let count: Int
+    let iconName: String
     let isSelected: Bool
     let action: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 5) {
+            HStack(spacing: 6) {
+                Image(systemName: iconName)
+                    .font(.system(size: 11, weight: .semibold))
+                    .foregroundColor(colorScheme == .dark ? (isSelected ? .white : .white.opacity(0.5)) : (isSelected ? Color(red: 0.2, green: 0.15, blue: 0.1) : Color(red: 0.45, green: 0.38, blue: 0.3)))
+
                 Text(title)
                     .font(.geist(12, weight: isSelected ? .bold : .medium))
-                    .foregroundColor(isSelected ? .primary : .secondary)
-
-                if count > 0 {
-                    Text("\(count)")
-                        .font(.geist(10, weight: .medium))
-                        .foregroundColor(isSelected ? .primary.opacity(0.8) : .secondary.opacity(0.6))
-                }
+                    .foregroundColor(colorScheme == .dark ? (isSelected ? .white : .white.opacity(0.65)) : (isSelected ? Color(red: 0.2, green: 0.15, blue: 0.1) : Color(red: 0.45, green: 0.38, blue: 0.3)))
             }
-            .padding(.horizontal, 10)
-            .padding(.vertical, 5)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
             .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(isSelected ? Color.primary.opacity(0.1) : Color.clear)
+                FolderTabShape()
+                    .fill(
+                        isSelected
+                            ? (colorScheme == .dark ? Color(red: 0.22, green: 0.20, blue: 0.18) : Color(red: 0.94, green: 0.92, blue: 0.86))
+                            : (colorScheme == .dark ? Color(red: 0.16, green: 0.15, blue: 0.14) : Color(red: 0.88, green: 0.84, blue: 0.77))
+                    )
+            )
+            .overlay(
+                FolderTabShape()
+                    .stroke(
+                        isSelected
+                            ? Color.primary.opacity(0.18)
+                            : Color.primary.opacity(0.08),
+                        lineWidth: 0.75
+                    )
+            )
+            .shadow(
+                color: isSelected ? Color.black.opacity(0.08) : Color.clear,
+                radius: isSelected ? 3 : 0,
+                x: 0,
+                y: isSelected ? -1 : 0
             )
         }
         .buttonStyle(PlainButtonStyle())
+        .zIndex(isSelected ? 10 : 1)
+    }
+}
+
+// File Folder Tab Shape with left rounded corner & right diagonal slope
+struct FolderTabShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let topCornerRadius: CGFloat = 8
+        let slantOffset: CGFloat = 12
+
+        // Start at bottom left
+        path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
+
+        // Left vertical line up to top-left curve
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + topCornerRadius))
+        path.addArc(
+            center: CGPoint(x: rect.minX + topCornerRadius, y: rect.minY + topCornerRadius),
+            radius: topCornerRadius,
+            startAngle: .degrees(180),
+            endAngle: .degrees(270),
+            clockwise: false
+        )
+
+        // Top horizontal line
+        path.addLine(to: CGPoint(x: rect.maxX - slantOffset - topCornerRadius, y: rect.minY))
+
+        // Top right smooth curve into diagonal slant
+        path.addArc(
+            center: CGPoint(x: rect.maxX - slantOffset - topCornerRadius, y: rect.minY + topCornerRadius),
+            radius: topCornerRadius,
+            startAngle: .degrees(270),
+            endAngle: .degrees(315),
+            clockwise: false
+        )
+
+        // Slanted right edge down to bottom right
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+
+        // Close along bottom
+        path.closeSubpath()
+        return path
     }
 }
 
@@ -213,7 +311,7 @@ struct FilterDotChip: View {
                     .foregroundColor(.secondary.opacity(0.6))
             }
             .padding(.horizontal, 8)
-            .padding(.vertical, 3)
+            .padding(.vertical, 4)
             .background(
                 Capsule()
                     .fill(isSelected ? Color.primary.opacity(0.08) : Color.primary.opacity(0.03))
