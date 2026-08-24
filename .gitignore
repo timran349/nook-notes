@@ -8,6 +8,11 @@
 dmg_temp/
 AppIcon.iconset/
 
+# Website build & dependency directories
+site/node_modules/
+site/.next/
+site/out/
+
 # macOS system files
 .DS_Store
 .AppleDouble
