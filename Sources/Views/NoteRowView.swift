@@ -6,19 +6,35 @@ public struct NoteRowView: View {
     public let onSelect: () -> Void
     public let onDelete: () -> Void
     public let onRename: () -> Void
+    public let onDetach: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
     @State private var isHovered: Bool = false
     @State private var isPressed: Bool = false
 
     public var body: some View {
+        let paperColor = colorScheme == .dark ? note.color.darkColor : note.color.lightColor
+
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
+                // Sticky color indicator dot
+                Circle()
+                    .fill(note.color.accentBorder)
+                    .frame(width: 8, height: 8)
+
                 Text(note.displayTitle)
                     .font(.geist(13, weight: .semibold))
                     .foregroundColor(.primary.opacity(0.9))
                     .lineLimit(1)
 
                 Spacer()
+
+                if note.isDetached {
+                    Image(systemName: "pin.fill")
+                        .font(.system(size: 9))
+                        .foregroundColor(.accentColor)
+                        .help("Pinned on Desktop")
+                }
 
                 Text(note.formattedTime)
                     .font(.geist(10, weight: .regular))
@@ -36,34 +52,35 @@ public struct NoteRowView: View {
             RoundedRectangle(cornerRadius: 8)
                 .fill(
                     isSelected
-                        ? Color.accentColor.opacity(0.14)
-                        : (isHovered ? Color.primary.opacity(0.06) : Color.primary.opacity(0.02))
+                        ? paperColor.opacity(0.85)
+                        : (isHovered ? paperColor.opacity(0.65) : paperColor.opacity(0.35))
                 )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
                 .stroke(
                     isSelected
-                        ? Color.accentColor.opacity(0.35)
-                        : (isHovered ? Color.primary.opacity(0.12) : Color.clear),
-                    lineWidth: 0.75
+                        ? note.color.accentBorder
+                        : (isHovered ? note.color.accentBorder.opacity(0.6) : Color.primary.opacity(0.06)),
+                    lineWidth: isSelected ? 1.25 : 0.75
                 )
         )
         .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.012 : 1.0))
         .shadow(
-            color: isHovered ? Color.black.opacity(0.08) : Color.clear,
-            radius: isHovered ? 4 : 0,
+            color: isHovered ? Color.black.opacity(0.12) : Color.black.opacity(0.04),
+            radius: isHovered ? 5 : 2,
             x: 0,
-            y: isHovered ? 2 : 0
+            y: isHovered ? 2 : 1
         )
         .contentShape(Rectangle())
         .onTapGesture {
             onSelect()
         }
         .simultaneousGesture(
-            DragGesture(minimumDistance: 0)
-                .onChanged { _ in isPressed = true }
-                .onEnded { _ in isPressed = false }
+            DragGesture(minimumDistance: 15)
+                .onEnded { _ in
+                    onDetach()
+                }
         )
         .onHover { hovering in
             withAnimation(.spring(response: 0.2, dampingFraction: 0.75)) {
@@ -71,8 +88,10 @@ public struct NoteRowView: View {
             }
         }
         .animation(.spring(response: 0.2, dampingFraction: 0.75), value: isHovered)
-        .animation(.spring(response: 0.15, dampingFraction: 0.8), value: isPressed)
         .contextMenu {
+            Button(action: onDetach) {
+                Label(note.isDetached ? "Bring Sticky to Focus" : "Stick on Desktop", systemImage: "pin")
+            }
             Button(action: onSelect) {
                 Label("Open Note", systemImage: "arrow.up.forward.app")
             }

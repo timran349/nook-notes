@@ -22,13 +22,13 @@ public struct NoteListView: View {
                         .foregroundColor(.secondary)
 
                     Button(action: {
-                        withAnimation(.easeOut(duration: 0.15)) {
+                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                             noteStore.searchQuery = ""
                             let newNote = noteStore.createNote()
                             onSelectNote(newNote)
                         }
                     }) {
-                        Text("+ New note")
+                        Text("+ New sticky note")
                             .font(.geist(12, weight: .semibold))
                             .foregroundColor(.accentColor)
                             .padding(.horizontal, 14)
@@ -63,7 +63,7 @@ public struct NoteListView: View {
                                             onSelectNote(note)
                                         },
                                         onDelete: {
-                                            withAnimation(.easeOut(duration: 0.15)) {
+                                            withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
                                                 noteStore.deleteNote(id: note.id)
                                             }
                                         },
@@ -71,6 +71,9 @@ public struct NoteListView: View {
                                             noteToRename = note
                                             renameText = note.title
                                             showRenameAlert = true
+                                        },
+                                        onDetach: {
+                                            DetachedStickyManager.shared.detachNote(note, noteStore: noteStore)
                                         }
                                     )
                                 }

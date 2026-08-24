@@ -57,6 +57,7 @@ public struct MainView: View {
                         } else if isEditingNote, let selectedNote = bindingForSelectedNote() {
                             NoteEditorView(
                                 note: selectedNote,
+                                noteStore: noteStore,
                                 onNoteChanged: { updated in
                                     noteStore.updateNote(updated)
                                 }
@@ -101,6 +102,9 @@ public struct MainView: View {
         .animation(.spring(response: 0.24, dampingFraction: 0.82), value: windowManager.isSettingsPresented)
         .onAppear {
             setupGlobalHotkey()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
+                DetachedStickyManager.shared.syncDetachedWindows(noteStore: noteStore)
+            }
         }
         .background(ShortcutHandlerView(
             onNewNote: {
