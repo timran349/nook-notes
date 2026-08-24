@@ -27,16 +27,23 @@ public struct HeaderView: View {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 11, weight: .bold))
                         Text("Notes")
-                            .font(.system(size: 13, weight: .medium, design: .default))
+                            .font(.geist(13, weight: .medium))
                     }
                     .foregroundColor(.secondary)
                     .contentShape(Rectangle())
                 }
                 .buttonStyle(HeaderIconButtonStyle())
             } else {
-                Text("Nook")
-                    .font(.system(size: 15, weight: .bold, design: .default))
-                    .foregroundColor(.primary.opacity(0.9))
+                HStack(spacing: 6) {
+                    Image(systemName: "line.3.horizontal")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundColor(.secondary.opacity(0.5))
+                        .help("Drag to move Nook")
+
+                    Text("Nook")
+                        .font(.geist(15, weight: .bold))
+                        .foregroundColor(.primary.opacity(0.9))
+                }
             }
 
             Spacer()
@@ -115,6 +122,12 @@ public struct HeaderView: View {
         .padding(.vertical, 12)
         .contentShape(Rectangle())
         .contextMenu {
+            Button(action: {
+                windowManager.resetToBottomLeft()
+            }) {
+                Label("Reset Position to Bottom-Left", systemImage: "arrow.uturn.backward")
+            }
+
             Button(action: {
                 windowManager.collapsePanel()
             }) {

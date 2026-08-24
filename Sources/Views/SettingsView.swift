@@ -11,7 +11,7 @@ public struct SettingsView: View {
             // Header
             HStack {
                 Text("Settings")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.geist(14, weight: .bold))
                     .foregroundColor(.primary)
                 Spacer()
                 Button(action: onClose) {
@@ -28,7 +28,7 @@ public struct SettingsView: View {
             // Appearance Picker
             VStack(alignment: .leading, spacing: 6) {
                 Text("APPEARANCE")
-                    .font(.system(size: 10, weight: .bold))
+                    .font(.geist(10, weight: .bold))
                     .foregroundColor(.secondary.opacity(0.6))
 
                 Picker("", selection: $noteStore.appAppearance) {
@@ -44,7 +44,7 @@ public struct SettingsView: View {
                 Toggle(isOn: $launchManager.isEnabled) {
                     HStack {
                         Text("Launch at login")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.geist(12, weight: .medium))
                         Spacer()
                     }
                 }
@@ -53,7 +53,7 @@ public struct SettingsView: View {
                 Toggle(isOn: $noteStore.alwaysOnTop) {
                     HStack {
                         Text("Always on top")
-                            .font(.system(size: 12, weight: .medium))
+                            .font(.geist(12, weight: .medium))
                         Spacer()
                     }
                 }
@@ -68,7 +68,7 @@ public struct SettingsView: View {
             // Shortcut Info
             HStack {
                 Text("Global Shortcut")
-                    .font(.system(size: 12, weight: .medium))
+                    .font(.geist(12, weight: .medium))
                     .foregroundColor(.secondary)
                 Spacer()
                 Text("⌘ ⇧ Space")
@@ -83,6 +83,20 @@ public struct SettingsView: View {
 
             Spacer()
 
+            // Reset position button if moved
+            Button(action: {
+                windowManager.resetToBottomLeft()
+            }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.system(size: 11, weight: .medium))
+                    Text("Reset Position to Bottom-Left")
+                        .font(.geist(11, weight: .medium))
+                }
+                .foregroundColor(.secondary)
+            }
+            .buttonStyle(PlainButtonStyle())
+
             // Quit App Button
             Button(action: {
                 NSApp.terminate(nil)
@@ -91,7 +105,7 @@ public struct SettingsView: View {
                     Image(systemName: "power")
                         .font(.system(size: 11, weight: .semibold))
                     Text("Quit Nook Notes")
-                        .font(.system(size: 12, weight: .medium))
+                        .font(.geist(12, weight: .medium))
                 }
                 .foregroundColor(.red.opacity(0.85))
                 .padding(.horizontal, 14)
@@ -106,10 +120,10 @@ public struct SettingsView: View {
             // Footer
             VStack(spacing: 2) {
                 Text("Nook Notes 1.0.0")
-                    .font(.system(size: 10, weight: .semibold))
+                    .font(.geist(10, weight: .semibold))
                     .foregroundColor(.secondary)
                 Text("Minimal macOS Sticky Utility")
-                    .font(.system(size: 9, weight: .regular))
+                    .font(.geist(9, weight: .regular))
                     .foregroundColor(.secondary.opacity(0.6))
             }
         }

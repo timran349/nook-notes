@@ -18,7 +18,7 @@ public struct NoteListView: View {
                         .foregroundColor(.secondary.opacity(0.5))
 
                     Text(noteStore.searchQuery.isEmpty ? "Nothing here yet." : "No matching notes")
-                        .font(.system(size: 13, weight: .medium))
+                        .font(.geist(13, weight: .medium))
                         .foregroundColor(.secondary)
 
                     Button(action: {
@@ -29,7 +29,7 @@ public struct NoteListView: View {
                         }
                     }) {
                         Text("+ New note")
-                            .font(.system(size: 12, weight: .semibold))
+                            .font(.geist(12, weight: .semibold))
                             .foregroundColor(.accentColor)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 6)
@@ -49,7 +49,7 @@ public struct NoteListView: View {
                         ForEach(noteStore.groupedNotes, id: \.category) { section in
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(section.category.rawValue)
-                                    .font(.system(size: 10, weight: .bold, design: .default))
+                                    .font(.geist(10, weight: .bold))
                                     .foregroundColor(.secondary.opacity(0.6))
                                     .padding(.leading, 6)
                                     .padding(.bottom, 2)

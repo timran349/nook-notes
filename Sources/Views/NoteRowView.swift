@@ -13,19 +13,19 @@ public struct NoteRowView: View {
         VStack(alignment: .leading, spacing: 4) {
             HStack(alignment: .firstTextBaseline) {
                 Text(note.displayTitle)
-                    .font(.system(size: 13, weight: .semibold, design: .default))
+                    .font(.geist(13, weight: .semibold))
                     .foregroundColor(.primary.opacity(0.9))
                     .lineLimit(1)
 
                 Spacer()
 
                 Text(note.formattedTime)
-                    .font(.system(size: 10, weight: .regular, design: .default))
+                    .font(.geist(10, weight: .regular))
                     .foregroundColor(.secondary.opacity(0.8))
             }
 
             Text(note.previewText)
-                .font(.system(size: 11, weight: .regular, design: .default))
+                .font(.geist(11, weight: .regular))
                 .foregroundColor(.secondary)
                 .lineLimit(1)
         }

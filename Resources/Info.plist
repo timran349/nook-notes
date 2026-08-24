@@ -28,5 +28,15 @@
     <true/>
     <key>NSHumanReadableCopyright</key>
     <string>Copyright © 2026 Nook. All rights reserved.</string>
+    <key>ATSApplicationFontsPath</key>
+    <string>.</string>
+
+    <!-- Sparkle 2 Auto-Update Configuration -->
+    <key>SUFeedURL</key>
+    <string>https://raw.githubusercontent.com/timran349/nook-notes/main/appcast.xml</string>
+    <key>SUEnableAutomaticChecks</key>
+    <true/>
+    <key>SUScheduledCheckInterval</key>
+    <integer>86400</integer>
 </dict>
 </plist>

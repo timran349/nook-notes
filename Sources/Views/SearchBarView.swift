@@ -12,7 +12,7 @@ public struct SearchBarView: View {
 
             TextField("Search notes...", text: $searchText)
                 .textFieldStyle(PlainTextFieldStyle())
-                .font(.system(size: 12, weight: .regular))
+                .font(.geist(12, weight: .regular))
 
             if !searchText.isEmpty {
                 Button(action: {

@@ -18,13 +18,17 @@ public class WindowManager: ObservableObject {
     private var globalMouseMonitor: Any?
     private var localMouseMonitor: Any?
     private var clickOutsideMonitor: Any?
+    private var windowMoveMonitor: Any?
 
-    // Window dimensions
+    // Custom dragged position storage
+    private var userExpandedOrigin: NSPoint?
+
+    // Window dimensions (Slightly bigger for spacious layout)
     public let collapsedWidth: CGFloat = 110
     public let collapsedHeight: CGFloat = 50
 
-    public let expandedWidth: CGFloat = 350
-    public let expandedHeight: CGFloat = 480
+    public let expandedWidth: CGFloat = 410
+    public let expandedHeight: CGFloat = 540
 
     public init() {}
 
@@ -43,6 +47,7 @@ public class WindowManager: ObservableObject {
         panel.ignoresMouseEvents = false
         panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         panel.hidesOnDeactivate = false
+        panel.isMovableByWindowBackground = true // Allows dragging window around desktop
         panel.contentView = contentView
 
         self.window = panel
@@ -52,6 +57,7 @@ public class WindowManager: ObservableObject {
 
         setupMouseTracking()
         setupClickOutsideTracking()
+        setupWindowMoveTracking()
     }
 
     public func togglePanel() {
@@ -76,11 +82,24 @@ public class WindowManager: ObservableObject {
 
     public func collapsePanel() {
         guard isExpanded else { return }
+
+        // Save current expanded origin before collapsing if moved
+        if let currentFrame = window?.frame {
+            self.userExpandedOrigin = currentFrame.origin
+        }
+
         isExpanded = false
         isSettingsPresented = false
         isHovered = false
 
         updateWindowPosition(animated: true)
+    }
+
+    public func resetToBottomLeft() {
+        self.userExpandedOrigin = nil
+        if isExpanded {
+            updateWindowPosition(animated: true)
+        }
     }
 
     public func updateWindowPosition(animated: Bool = false) {
@@ -94,9 +113,20 @@ public class WindowManager: ObservableObject {
         let width = isExpanded ? expandedWidth : collapsedWidth
         let height = isExpanded ? expandedHeight : collapsedHeight
 
+        let targetOrigin: NSPoint
+        if isExpanded {
+            if let custom = userExpandedOrigin {
+                targetOrigin = custom
+            } else {
+                targetOrigin = NSPoint(x: screenFrame.origin.x, y: screenFrame.origin.y)
+            }
+        } else {
+            targetOrigin = NSPoint(x: screenFrame.origin.x, y: screenFrame.origin.y)
+        }
+
         let targetRect = NSRect(
-            x: screenFrame.origin.x,
-            y: screenFrame.origin.y,
+            x: targetOrigin.x,
+            y: targetOrigin.y,
             width: width,
             height: height
         )
@@ -109,6 +139,17 @@ public class WindowManager: ObservableObject {
             }
         } else {
             window.setFrame(targetRect, display: true)
+        }
+    }
+
+    private func setupWindowMoveTracking() {
+        NotificationCenter.default.addObserver(
+            forName: NSWindow.didMoveNotification,
+            object: window,
+            queue: .main
+        ) { [weak self] _ in
+            guard let self = self, self.isExpanded, let frame = self.window?.frame else { return }
+            self.userExpandedOrigin = frame.origin
         }
     }
 
@@ -171,5 +212,6 @@ public class WindowManager: ObservableObject {
         if let monitor = globalMouseMonitor { NSEvent.removeMonitor(monitor) }
         if let monitor = localMouseMonitor { NSEvent.removeMonitor(monitor) }
         if let monitor = clickOutsideMonitor { NSEvent.removeMonitor(monitor) }
+        NotificationCenter.default.removeObserver(self)
     }
 }

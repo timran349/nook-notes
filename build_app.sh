@@ -21,6 +21,7 @@ cp Resources/Info.plist "$CONTENTS_DIR/Info.plist"
 if [ -f "Resources/AppIcon.icns" ]; then
     cp Resources/AppIcon.icns "$RESOURCES_DIR/AppIcon.icns"
 fi
+cp Resources/*.ttf "$RESOURCES_DIR/" 2>/dev/null || true
 
 echo "=== 3. Code Signing App Bundle ==="
 IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Development" | head -n 1 | awk -F '"' '{print $2}')

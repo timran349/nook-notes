@@ -24,7 +24,7 @@ public struct CollapsedTabView: View {
 
                         if windowManager.isHovered {
                             Text("Nook")
-                                .font(.system(size: 10, weight: .semibold, design: .default))
+                                .font(.geist(10, weight: .semibold))
                                 .foregroundColor(Color.primary.opacity(0.85))
                                 .transition(.opacity.combined(with: .move(edge: .leading)))
                         }

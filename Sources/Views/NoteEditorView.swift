@@ -25,7 +25,7 @@ public struct NoteEditorView: View {
                     onNoteChanged(note)
                 }
             ))
-            .font(.system(size: 15, weight: .bold, design: .default))
+            .font(.geist(16, weight: .bold))
             .textFieldStyle(PlainTextFieldStyle())
             .focused($isTitleFocused)
             .padding(.horizontal, 16)
@@ -43,7 +43,7 @@ public struct NoteEditorView: View {
                     onNoteChanged(note)
                 }
             ))
-            .font(.system(size: 13, weight: .regular, design: .default))
+            .font(.geist(13, weight: .regular))
             .lineSpacing(4)
             .focused($isContentFocused)
             .scrollContentBackground(.hidden)
@@ -52,13 +52,7 @@ public struct NoteEditorView: View {
         }
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                if note.title.isEmpty && note.content.isEmpty {
-                    isContentFocused = true
-                } else if note.title.isEmpty {
-                    isContentFocused = true
-                } else {
-                    isContentFocused = true
-                }
+                isContentFocused = true
             }
         }
     }
