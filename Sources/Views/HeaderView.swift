@@ -51,7 +51,7 @@ public struct HeaderView: View {
             if !isEditing {
                 // Search button
                 Button(action: {
-                    withAnimation(.easeOut(duration: 0.15)) {
+                    withAnimation(.spring(response: 0.2, dampingFraction: 0.75)) {
                         noteStore.isSearching.toggle()
                         if !noteStore.isSearching {
                             noteStore.searchQuery = ""
@@ -66,7 +66,7 @@ public struct HeaderView: View {
 
                 // New note button
                 Button(action: {
-                    withAnimation(.easeOut(duration: 0.15)) {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         let newNote = noteStore.createNote()
                         noteStore.selectedNoteId = newNote.id
                     }
@@ -81,7 +81,7 @@ public struct HeaderView: View {
                 // Delete active note button
                 Button(action: {
                     if let selectedId = noteStore.selectedNoteId {
-                        withAnimation(.easeOut(duration: 0.15)) {
+                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
                             noteStore.deleteNote(id: selectedId)
                             onBack()
                         }
@@ -97,13 +97,14 @@ public struct HeaderView: View {
 
             // Settings button
             Button(action: {
-                withAnimation(.easeOut(duration: 0.15)) {
+                withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                     windowManager.isSettingsPresented.toggle()
                 }
             }) {
                 Image(systemName: "gearshape")
                     .font(.system(size: 12, weight: .regular))
                     .foregroundColor(windowManager.isSettingsPresented ? .accentColor : .secondary)
+                    .rotationEffect(.degrees(windowManager.isSettingsPresented ? 45 : 0))
             }
             .buttonStyle(HeaderIconButtonStyle())
 
@@ -135,7 +136,7 @@ public struct HeaderView: View {
             }
 
             Button(action: {
-                withAnimation(.easeOut(duration: 0.15)) {
+                withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                     windowManager.isSettingsPresented.toggle()
                 }
             }) {
@@ -159,8 +160,9 @@ struct HeaderIconButtonStyle: ButtonStyle {
             .padding(6)
             .background(
                 RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.primary.opacity(configuration.isPressed ? 0.08 : 0.0))
+                    .fill(Color.primary.opacity(configuration.isPressed ? 0.1 : 0.0))
             )
-            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .scaleEffect(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.spring(response: 0.15, dampingFraction: 0.7), value: configuration.isPressed)
     }
 }

@@ -3,6 +3,7 @@ import AppKit
 
 public struct CollapsedTabView: View {
     @ObservedObject var windowManager: WindowManager
+    @State private var isPressed: Bool = false
 
     public init(windowManager: WindowManager) {
         self.windowManager = windowManager
@@ -13,41 +14,71 @@ public struct CollapsedTabView: View {
             Spacer()
             HStack {
                 Button(action: {
-                    withAnimation(.easeOut(duration: 0.18)) {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.82)) {
                         windowManager.expandPanel()
                     }
                 }) {
-                    HStack(spacing: 5) {
-                        RoundedRectangle(cornerRadius: 1.5)
-                            .fill(Color.primary.opacity(windowManager.isHovered ? 0.6 : 0.35))
-                            .frame(width: 14, height: 3)
+                    HStack(spacing: 6) {
+                        // Animated pill indicator bar
+                        RoundedRectangle(cornerRadius: 2)
+                            .fill(
+                                LinearGradient(
+                                    colors: windowManager.isHovered
+                                        ? [Color.accentColor, Color.primary.opacity(0.85)]
+                                        : [Color.primary.opacity(0.4), Color.primary.opacity(0.25)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .frame(width: windowManager.isHovered ? 16 : 12, height: 3.5)
+                            .scaleEffect(windowManager.isHovered ? 1.05 : 1.0)
+                            .animation(.spring(response: 0.2, dampingFraction: 0.7), value: windowManager.isHovered)
 
                         if windowManager.isHovered {
                             Text("Nook")
                                 .font(.geist(10, weight: .semibold))
-                                .foregroundColor(Color.primary.opacity(0.85))
-                                .transition(.opacity.combined(with: .move(edge: .leading)))
+                                .foregroundColor(Color.primary.opacity(0.9))
+                                .transition(.asymmetric(
+                                    insertion: .move(edge: .leading).combined(with: .opacity),
+                                    removal: .opacity
+                                ))
                         }
                     }
-                    .padding(.horizontal, 10)
-                    .frame(height: windowManager.isHovered ? 22 : 14)
+                    .padding(.horizontal, 11)
+                    .frame(height: windowManager.isHovered ? 24 : 14)
                     .background(
                         VisualEffectView(material: .hudWindow, blendingMode: .withinWindow, state: .active)
                             .overlay(
-                                Color.primary.opacity(windowManager.isHovered ? 0.08 : 0.04)
+                                Color.primary.opacity(windowManager.isHovered ? 0.1 : 0.04)
                             )
                     )
                     .clipShape(
-                        CustomCornerShape(corners: [.topRight], radius: 7)
+                        CustomCornerShape(corners: [.topRight], radius: 8)
                     )
                     .overlay(
-                        CustomCornerShape(corners: [.topRight], radius: 7)
-                            .stroke(Color.primary.opacity(windowManager.isHovered ? 0.15 : 0.08), lineWidth: 0.75)
+                        CustomCornerShape(corners: [.topRight], radius: 8)
+                            .stroke(
+                                windowManager.isHovered
+                                    ? Color.accentColor.opacity(0.4)
+                                    : Color.primary.opacity(0.08),
+                                lineWidth: 0.75
+                            )
                     )
-                    .shadow(color: Color.black.opacity(windowManager.isHovered ? 0.18 : 0.08), radius: windowManager.isHovered ? 4 : 2, x: 1, y: -1)
+                    .shadow(
+                        color: windowManager.isHovered ? Color.accentColor.opacity(0.2) : Color.black.opacity(0.1),
+                        radius: windowManager.isHovered ? 6 : 2,
+                        x: windowManager.isHovered ? 2 : 1,
+                        y: windowManager.isHovered ? -2 : -1
+                    )
+                    .scaleEffect(isPressed ? 0.95 : (windowManager.isHovered ? 1.02 : 1.0))
                 }
                 .buttonStyle(PlainButtonStyle())
                 .offset(y: windowManager.isHovered ? 0 : 4)
+                .simultaneousGesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { _ in isPressed = true }
+                        .onEnded { _ in isPressed = false }
+                )
                 .contextMenu {
                     Button(action: {
                         windowManager.expandPanel()
@@ -74,7 +105,7 @@ public struct CollapsedTabView: View {
                 Spacer()
             }
         }
-        .animation(.easeOut(duration: 0.15), value: windowManager.isHovered)
+        .animation(.spring(response: 0.25, dampingFraction: 0.8), value: windowManager.isHovered)
     }
 }
 

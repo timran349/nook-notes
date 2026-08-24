@@ -8,6 +8,7 @@ public struct NoteRowView: View {
     public let onRename: () -> Void
 
     @State private var isHovered: Bool = false
+    @State private var isPressed: Bool = false
 
     public var body: some View {
         VStack(alignment: .leading, spacing: 4) {
@@ -30,34 +31,57 @@ public struct NoteRowView: View {
                 .lineLimit(1)
         }
         .padding(.horizontal, 12)
-        .padding(.vertical, 8)
+        .padding(.vertical, 9)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(isSelected ? Color.accentColor.opacity(0.12) : (isHovered ? Color.primary.opacity(0.04) : Color.clear))
+                .fill(
+                    isSelected
+                        ? Color.accentColor.opacity(0.14)
+                        : (isHovered ? Color.primary.opacity(0.06) : Color.primary.opacity(0.02))
+                )
         )
         .overlay(
             RoundedRectangle(cornerRadius: 8)
-                .stroke(isSelected ? Color.accentColor.opacity(0.25) : Color.clear, lineWidth: 0.75)
+                .stroke(
+                    isSelected
+                        ? Color.accentColor.opacity(0.35)
+                        : (isHovered ? Color.primary.opacity(0.12) : Color.clear),
+                    lineWidth: 0.75
+                )
+        )
+        .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.012 : 1.0))
+        .shadow(
+            color: isHovered ? Color.black.opacity(0.08) : Color.clear,
+            radius: isHovered ? 4 : 0,
+            x: 0,
+            y: isHovered ? 2 : 0
         )
         .contentShape(Rectangle())
         .onTapGesture {
             onSelect()
         }
+        .simultaneousGesture(
+            DragGesture(minimumDistance: 0)
+                .onChanged { _ in isPressed = true }
+                .onEnded { _ in isPressed = false }
+        )
         .onHover { hovering in
-            withAnimation(.easeOut(duration: 0.1)) {
+            withAnimation(.spring(response: 0.2, dampingFraction: 0.75)) {
                 isHovered = hovering
             }
         }
+        .animation(.spring(response: 0.2, dampingFraction: 0.75), value: isHovered)
+        .animation(.spring(response: 0.15, dampingFraction: 0.8), value: isPressed)
         .contextMenu {
             Button(action: onSelect) {
-                Label("Open", systemImage: "arrow.up.forward.app")
+                Label("Open Note", systemImage: "arrow.up.forward.app")
             }
             Button(action: onRename) {
                 Label("Rename", systemImage: "pencil")
             }
             Divider()
             Button(role: .destructive, action: onDelete) {
-                Label("Delete", systemImage: "trash")
+                Label("Delete Note", systemImage: "trash")
             }
         }
     }

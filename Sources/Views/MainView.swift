@@ -12,6 +12,7 @@ public struct MainView: View {
         Group {
             if !windowManager.isExpanded {
                 CollapsedTabView(windowManager: windowManager)
+                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
             } else {
                 VStack(spacing: 0) {
                     // Header
@@ -20,7 +21,7 @@ public struct MainView: View {
                         windowManager: windowManager,
                         isEditing: isEditingNote,
                         onBack: {
-                            withAnimation(.easeOut(duration: 0.15)) {
+                            withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                                 isEditingNote = false
                             }
                         }
@@ -29,7 +30,7 @@ public struct MainView: View {
                     // Search Bar
                     if noteStore.isSearching && !isEditingNote && !windowManager.isSettingsPresented {
                         SearchBarView(searchText: $noteStore.searchQuery) {
-                            withAnimation(.easeOut(duration: 0.15)) {
+                            withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                                 noteStore.isSearching = false
                                 noteStore.searchQuery = ""
                             }
@@ -47,12 +48,12 @@ public struct MainView: View {
                                 noteStore: noteStore,
                                 windowManager: windowManager,
                                 onClose: {
-                                    withAnimation(.easeOut(duration: 0.15)) {
+                                    withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                                         windowManager.isSettingsPresented = false
                                     }
                                 }
                             )
-                            .transition(.opacity)
+                            .transition(.scale(scale: 0.96).combined(with: .opacity))
                         } else if isEditingNote, let selectedNote = bindingForSelectedNote() {
                             NoteEditorView(
                                 note: selectedNote,
@@ -60,18 +61,24 @@ public struct MainView: View {
                                     noteStore.updateNote(updated)
                                 }
                             )
-                            .transition(.asymmetric(insertion: .move(edge: .trailing), removal: .move(edge: .trailing)))
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .trailing).combined(with: .opacity),
+                                removal: .move(edge: .trailing).combined(with: .opacity)
+                            ))
                         } else {
                             NoteListView(
                                 noteStore: noteStore,
                                 onSelectNote: { note in
-                                    withAnimation(.easeOut(duration: 0.15)) {
+                                    withAnimation(.spring(response: 0.26, dampingFraction: 0.82)) {
                                         noteStore.selectedNoteId = note.id
                                         isEditingNote = true
                                     }
                                 }
                             )
-                            .transition(.asymmetric(insertion: .move(edge: .leading), removal: .move(edge: .leading)))
+                            .transition(.asymmetric(
+                                insertion: .move(edge: .leading).combined(with: .opacity),
+                                removal: .move(edge: .leading).combined(with: .opacity)
+                            ))
                         }
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -84,18 +91,21 @@ public struct MainView: View {
                     RoundedRectangle(cornerRadius: 12)
                         .stroke(Color.primary.opacity(0.12), lineWidth: 0.75)
                 )
-                .shadow(color: Color.black.opacity(0.22), radius: 12, x: 2, y: 4)
+                .shadow(color: Color.black.opacity(0.22), radius: 14, x: 2, y: 5)
                 .padding(4)
-                .transition(.scale(scale: 0.98).combined(with: .opacity))
+                .transition(.scale(scale: 0.97, anchor: .bottomLeft).combined(with: .opacity))
             }
         }
+        .animation(.spring(response: 0.26, dampingFraction: 0.82), value: windowManager.isExpanded)
+        .animation(.spring(response: 0.24, dampingFraction: 0.82), value: isEditingNote)
+        .animation(.spring(response: 0.24, dampingFraction: 0.82), value: windowManager.isSettingsPresented)
         .onAppear {
             setupGlobalHotkey()
         }
         .background(ShortcutHandlerView(
             onNewNote: {
                 if windowManager.isExpanded {
-                    withAnimation(.easeOut(duration: 0.15)) {
+                    withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                         let new = noteStore.createNote()
                         noteStore.selectedNoteId = new.id
                         isEditingNote = true
@@ -104,7 +114,7 @@ public struct MainView: View {
             },
             onSearch: {
                 if windowManager.isExpanded {
-                    withAnimation(.easeOut(duration: 0.15)) {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         noteStore.isSearching.toggle()
                         if !noteStore.isSearching {
                             noteStore.searchQuery = ""
@@ -114,18 +124,20 @@ public struct MainView: View {
             },
             onEscape: {
                 if windowManager.isExpanded {
-                    if windowManager.isSettingsPresented {
-                        windowManager.isSettingsPresented = false
-                    } else if isEditingNote {
-                        isEditingNote = false
-                    } else {
-                        windowManager.collapsePanel()
+                    withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
+                        if windowManager.isSettingsPresented {
+                            windowManager.isSettingsPresented = false
+                        } else if isEditingNote {
+                            isEditingNote = false
+                        } else {
+                            windowManager.collapsePanel()
+                        }
                     }
                 }
             },
             onDelete: {
                 if windowManager.isExpanded, let id = noteStore.selectedNoteId {
-                    withAnimation(.easeOut(duration: 0.15)) {
+                    withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
                         noteStore.deleteNote(id: id)
                         isEditingNote = false
                     }
