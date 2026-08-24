@@ -1,0 +1,22 @@
+# SwiftPM build directory
+.build/
+
+# App artifacts & distribution packages
+*.app
+*.dmg
+*.zip
+dmg_temp/
+AppIcon.iconset/
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Trashes
+
+# Xcode & User settings
+*.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+*.userstate
