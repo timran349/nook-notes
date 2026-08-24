@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 public struct CollapsedTabView: View {
     @ObservedObject var windowManager: WindowManager
@@ -47,6 +48,28 @@ public struct CollapsedTabView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 .offset(y: windowManager.isHovered ? 0 : 4)
+                .contextMenu {
+                    Button(action: {
+                        windowManager.expandPanel()
+                    }) {
+                        Label("Open Nook Notes", systemImage: "arrow.up.left.and.arrow.down.right")
+                    }
+
+                    Button(action: {
+                        windowManager.expandPanel()
+                        windowManager.isSettingsPresented = true
+                    }) {
+                        Label("Settings...", systemImage: "gearshape")
+                    }
+
+                    Divider()
+
+                    Button(role: .destructive, action: {
+                        NSApp.terminate(nil)
+                    }) {
+                        Label("Quit Nook Notes", systemImage: "power")
+                    }
+                }
 
                 Spacer()
             }
@@ -69,25 +92,21 @@ struct CustomCornerShape: Shape {
 
         path.move(to: CGPoint(x: rect.minX, y: rect.maxY))
 
-        // Left side & top-left
         path.addLine(to: CGPoint(x: rect.minX, y: rect.minY + tl))
         if tl > 0 {
             path.addArc(center: CGPoint(x: rect.minX + tl, y: rect.minY + tl), radius: tl, startAngle: .degrees(180), endAngle: .degrees(270), clockwise: false)
         }
 
-        // Top edge & top-right
         path.addLine(to: CGPoint(x: rect.maxX - tr, y: rect.minY))
         if tr > 0 {
             path.addArc(center: CGPoint(x: rect.maxX - tr, y: rect.minY + tr), radius: tr, startAngle: .degrees(270), endAngle: .degrees(360), clockwise: false)
         }
 
-        // Right side & bottom-right
         path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - br))
         if br > 0 {
             path.addArc(center: CGPoint(x: rect.maxX - br, y: rect.maxY - br), radius: br, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
         }
 
-        // Bottom edge & bottom-left
         path.addLine(to: CGPoint(x: rect.minX + bl, y: rect.maxY))
         path.closeSubpath()
         return path

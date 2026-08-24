@@ -83,6 +83,26 @@ public struct SettingsView: View {
 
             Spacer()
 
+            // Quit App Button
+            Button(action: {
+                NSApp.terminate(nil)
+            }) {
+                HStack(spacing: 6) {
+                    Image(systemName: "power")
+                        .font(.system(size: 11, weight: .semibold))
+                    Text("Quit Nook Notes")
+                        .font(.system(size: 12, weight: .medium))
+                }
+                .foregroundColor(.red.opacity(0.85))
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(
+                    RoundedRectangle(cornerRadius: 6)
+                        .fill(Color.red.opacity(0.08))
+                )
+            }
+            .buttonStyle(PlainButtonStyle())
+
             // Footer
             VStack(spacing: 2) {
                 Text("Nook Notes 1.0.0")

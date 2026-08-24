@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 public struct HeaderView: View {
     @ObservedObject var noteStore: NoteStore
@@ -112,6 +113,30 @@ public struct HeaderView: View {
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
+        .contentShape(Rectangle())
+        .contextMenu {
+            Button(action: {
+                windowManager.collapsePanel()
+            }) {
+                Label("Collapse Panel", systemImage: "chevron.down")
+            }
+
+            Button(action: {
+                withAnimation(.easeOut(duration: 0.15)) {
+                    windowManager.isSettingsPresented.toggle()
+                }
+            }) {
+                Label("Settings...", systemImage: "gearshape")
+            }
+
+            Divider()
+
+            Button(role: .destructive, action: {
+                NSApp.terminate(nil)
+            }) {
+                Label("Quit Nook Notes", systemImage: "power")
+            }
+        }
     }
 }
 
