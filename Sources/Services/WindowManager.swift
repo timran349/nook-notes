@@ -226,11 +226,17 @@ public class WindowManager: ObservableObject {
         clickOutsideMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self = self, self.isExpanded, let window = self.window else { return }
 
-            // Do not collapse while mouse button is held down (e.g. during window border resizing or dragging)
-            if NSEvent.pressedMouseButtons != 0 { return }
+            // Do not collapse while mouse button is held down or window is in live resize
+            if NSEvent.pressedMouseButtons != 0 || window.inLiveResize { return }
+
+            // Do not collapse if Settings is currently open
+            if self.isSettingsPresented { return }
 
             let mouseLoc = NSEvent.mouseLocation
-            if !NSMouseInRect(mouseLoc, window.frame, false) {
+            // 25px margin around window frame covers macOS window border resize handles & drop shadows
+            let borderHitArea = window.frame.insetBy(dx: -25, dy: -25)
+
+            if !NSMouseInRect(mouseLoc, borderHitArea, false) {
                 DispatchQueue.main.async {
                     self.collapsePanel()
                 }
