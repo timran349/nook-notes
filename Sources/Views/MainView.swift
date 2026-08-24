@@ -12,7 +12,7 @@ public struct MainView: View {
         Group {
             if !windowManager.isExpanded {
                 CollapsedTabView(windowManager: windowManager)
-                    .transition(.opacity.combined(with: .scale(scale: 0.95)))
+                    .transition(.opacity.combined(with: .scale(0.95)))
             } else {
                 VStack(spacing: 0) {
                     // Header
@@ -53,7 +53,7 @@ public struct MainView: View {
                                     }
                                 }
                             )
-                            .transition(.scale(scale: 0.96).combined(with: .opacity))
+                            .transition(.scale(0.96).combined(with: .opacity))
                         } else if isEditingNote, let selectedNote = bindingForSelectedNote() {
                             NoteEditorView(
                                 note: selectedNote,
@@ -93,7 +93,7 @@ public struct MainView: View {
                 )
                 .shadow(color: Color.black.opacity(0.22), radius: 14, x: 2, y: 5)
                 .padding(4)
-                .transition(.scale(scale: 0.97, anchor: .bottomLeft).combined(with: .opacity))
+                .transition(.scale.combined(with: .opacity))
             }
         }
         .animation(.spring(response: 0.26, dampingFraction: 0.82), value: windowManager.isExpanded)
