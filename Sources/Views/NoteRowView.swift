@@ -18,54 +18,40 @@ public struct NoteRowView: View {
             : Color.white
     }
 
+    private var titleColor: Color {
+        colorScheme == .dark
+            ? Color(red: 0.94, green: 0.94, blue: 0.95)
+            : Color(red: 0.22, green: 0.21, blue: 0.23)
+    }
+
+    private var subtitleColor: Color {
+        colorScheme == .dark
+            ? Color(red: 0.60, green: 0.60, blue: 0.63)
+            : Color(red: 0.60, green: 0.59, blue: 0.62)
+    }
+
     public var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // Header Row: Title & Action/Badge
-            HStack(alignment: .top, spacing: 8) {
-                Text(note.displayTitle)
-                    .font(.geist(14, weight: .bold))
-                    .foregroundColor(.primary)
-                    .lineLimit(1)
+        VStack(alignment: .leading, spacing: 6) {
+            // Bold Title (e.g. Untitled Note)
+            Text(note.displayTitle)
+                .font(.geist(17, weight: .bold))
+                .foregroundColor(titleColor)
+                .lineLimit(1)
 
-                Spacer()
-
-                // Subtle Date Pill (e.g. 5:25 PM)
-                Text(note.formattedTime)
-                    .font(.geist(10, weight: .semibold))
-                    .foregroundColor(.secondary)
-                    .padding(.horizontal, 7)
-                    .padding(.vertical, 3)
-                    .background(
-                        RoundedRectangle(cornerRadius: 6, style: .continuous)
-                            .fill(Color.primary.opacity(0.05))
-                    )
-            }
-
-            // Preview Text
+            // Subtitle preview (e.g. Empty note)
             Text(note.previewText)
-                .font(.geist(12, weight: .regular))
-                .foregroundColor(.secondary)
-                .lineLimit(2)
-                .lineSpacing(2)
-
-            // Footer Badges
-            if note.isDetached {
-                HStack(spacing: 4) {
-                    Image(systemName: "pin.fill")
-                        .font(.system(size: 9))
-                    Text("Floating Sticky")
-                        .font(.geist(10, weight: .medium))
-                }
-                .foregroundColor(.secondary)
-                .padding(.top, 2)
-            }
+                .font(.geist(13, weight: .medium))
+                .foregroundColor(subtitleColor)
+                .lineLimit(1)
         }
-        .padding(14)
+        .padding(.horizontal, 20)
+        .padding(.vertical, 22)
+        .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
                 .fill(cardBackground)
         )
-        .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.008 : 1.0))
+        .scaleEffect(isPressed ? 0.985 : (isHovered ? 1.006 : 1.0))
         .contentShape(Rectangle())
         .onTapGesture {
             onSelect()

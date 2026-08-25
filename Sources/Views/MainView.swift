@@ -9,10 +9,10 @@ public struct MainView: View {
 
     public init() {}
 
-    private var exactGrayBackground: Color {
+    private var exactMockupBackground: Color {
         colorScheme == .dark
             ? Color(red: 0.10, green: 0.10, blue: 0.11)
-            : Color(red: 0.949, green: 0.949, blue: 0.949) // #F2F2F2
+            : Color(red: 0.945, green: 0.945, blue: 0.949) // #F1F1F3
     }
 
     public var body: some View {
@@ -88,13 +88,13 @@ public struct MainView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .background(exactGrayBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+                .background(exactMockupBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                    RoundedRectangle(cornerRadius: 32, style: .continuous)
                         .stroke(Color.primary.opacity(0.06), lineWidth: 0.75)
                 )
-                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
+                .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
                 .padding(4)
                 .transition(AnyTransition.opacity.combined(with: .scale))
             }

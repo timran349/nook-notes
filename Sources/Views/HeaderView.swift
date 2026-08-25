@@ -21,10 +21,10 @@ public struct HeaderView: View {
         self.onBack = onBack
     }
 
-    private var mutedLogoGray: Color {
+    private var headerIconColor: Color {
         colorScheme == .dark
-            ? Color(red: 0.45, green: 0.45, blue: 0.48)
-            : Color(red: 0.72, green: 0.72, blue: 0.75)
+            ? Color(red: 0.65, green: 0.65, blue: 0.68)
+            : Color(red: 0.50, green: 0.49, blue: 0.51)
     }
 
     public var body: some View {
@@ -33,48 +33,33 @@ public struct HeaderView: View {
                 Button(action: onBack) {
                     HStack(spacing: 5) {
                         Image(systemName: "chevron.left")
-                            .font(.system(size: 11, weight: .bold))
-                        Text("Notes")
-                            .font(.geist(13, weight: .semibold))
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(headerIconColor)
+                        Text("notes")
+                            .font(.system(size: 19, weight: .bold, design: .serif))
+                            .foregroundColor(headerIconColor)
                     }
-                    .foregroundColor(.primary)
                 }
                 .buttonStyle(PlainButtonStyle())
             } else {
-                // Bold Muted Gray Logo matching user image
-                HStack(spacing: 6) {
-                    Image(systemName: "square.grid.2x2.fill")
-                        .font(.system(size: 14, weight: .bold))
-                        .foregroundColor(mutedLogoGray)
+                // 100% Exact match to mockup image: Grid icon + lowercase chunky serif "nook notes"
+                HStack(spacing: 8) {
+                    Image(systemName: "square.grid.2x2")
+                        .font(.system(size: 18, weight: .medium))
+                        .foregroundColor(headerIconColor)
 
-                    Text("Nook Notes")
-                        .font(.geist(16, weight: .bold))
-                        .foregroundColor(mutedLogoGray)
+                    Text("nook notes")
+                        .font(.system(size: 21, weight: .bold, design: .serif))
+                        .foregroundColor(headerIconColor)
                 }
             }
 
             Spacer()
 
-            // Header actions
-            HStack(spacing: 12) {
+            // Header actions: +  ⚙  ✕ (Exact 3 icons from image)
+            HStack(spacing: 16) {
                 if !isEditing {
-                    // Search toggle
-                    Button(action: {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                            noteStore.isSearching.toggle()
-                            if !noteStore.isSearching {
-                                noteStore.searchQuery = ""
-                            }
-                        }
-                    }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(noteStore.isSearching ? .primary : .secondary)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .help("Search Notes")
-
-                    // New Note button
+                    // + (Plus button)
                     Button(action: {
                         withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                             let newNote = noteStore.createNote()
@@ -82,11 +67,36 @@ public struct HeaderView: View {
                         }
                     }) {
                         Image(systemName: "plus")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.primary)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(headerIconColor)
                     }
                     .buttonStyle(PlainButtonStyle())
-                    .help("New Note (Cmd+N)")
+                    .help("New Note")
+
+                    // ⚙ (Settings gear)
+                    Button(action: {
+                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                            windowManager.isSettingsPresented.toggle()
+                        }
+                    }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 17, weight: .regular))
+                            .foregroundColor(windowManager.isSettingsPresented ? .primary : headerIconColor)
+                            .rotationEffect(.degrees(windowManager.isSettingsPresented ? 45 : 0))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help("Settings")
+
+                    // ✕ (Close / Collapse)
+                    Button(action: {
+                        windowManager.collapsePanel()
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(headerIconColor)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help("Collapse (Esc)")
                 } else {
                     Button(action: {
                         if let selectedId = noteStore.selectedNoteId {
@@ -97,39 +107,26 @@ public struct HeaderView: View {
                         }
                     }) {
                         Image(systemName: "trash")
-                            .font(.system(size: 13))
-                            .foregroundColor(.secondary)
+                            .font(.system(size: 15, weight: .regular))
+                            .foregroundColor(headerIconColor)
                     }
                     .buttonStyle(PlainButtonStyle())
                     .help("Delete Note")
-                }
 
-                Button(action: {
-                    withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
-                        windowManager.isSettingsPresented.toggle()
+                    Button(action: {
+                        windowManager.collapsePanel()
+                    }) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(headerIconColor)
                     }
-                }) {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 13))
-                        .foregroundColor(windowManager.isSettingsPresented ? .primary : .secondary.opacity(0.8))
-                        .rotationEffect(.degrees(windowManager.isSettingsPresented ? 45 : 0))
+                    .buttonStyle(PlainButtonStyle())
+                    .help("Collapse (Esc)")
                 }
-                .buttonStyle(PlainButtonStyle())
-                .help("Settings")
-
-                Button(action: {
-                    windowManager.collapsePanel()
-                }) {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(.secondary.opacity(0.6))
-                }
-                .buttonStyle(PlainButtonStyle())
-                .help("Collapse (Esc)")
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.top, 12)
-        .padding(.bottom, 8)
+        .padding(.horizontal, 20)
+        .padding(.top, 18)
+        .padding(.bottom, 14)
     }
 }
