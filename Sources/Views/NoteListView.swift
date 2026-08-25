@@ -133,7 +133,7 @@ public struct NoteListView: View {
     }
 }
 
-// Tab Segment Pill with clean rounded rectangle radius (not full round capsule)
+// Tab Segment Pill with clean rounded rectangle radius
 struct TabSegmentPill: View {
     let title: String
     let isSelected: Bool
@@ -252,10 +252,6 @@ struct ClipboardListView: View {
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
                                     .fill(cardBackground)
-                            )
-                            .overlay(
-                                RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .stroke(Color.primary.opacity(0.04), lineWidth: 0.75)
                             )
                         }
                     }

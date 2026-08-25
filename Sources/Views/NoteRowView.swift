@@ -29,7 +29,7 @@ public struct NoteRowView: View {
 
                 Spacer()
 
-                // Subtle Date Pill (e.g. 17:19)
+                // Subtle Date Pill (e.g. 5:25 PM)
                 Text(note.formattedTime)
                     .font(.geist(10, weight: .semibold))
                     .foregroundColor(.secondary)
@@ -64,15 +64,6 @@ public struct NoteRowView: View {
         .background(
             RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(cardBackground)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(
-                    isSelected
-                        ? Color.primary.opacity(0.2)
-                        : (isHovered ? Color.primary.opacity(0.12) : Color.primary.opacity(0.04)),
-                    lineWidth: isSelected ? 1.5 : 0.75
-                )
         )
         .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.008 : 1.0))
         .contentShape(Rectangle())

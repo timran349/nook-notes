@@ -89,10 +89,6 @@ public struct NoteEditorView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(paperColor)
         )
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(Color.primary.opacity(0.08), lineWidth: 0.75)
-        )
         .padding(8)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
