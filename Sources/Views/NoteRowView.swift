@@ -11,6 +11,7 @@ public struct NoteRowView: View {
     @Environment(\.colorScheme) private var colorScheme
     @State private var isHovered: Bool = false
     @State private var isPressed: Bool = false
+    @State private var isExpanded: Bool = false
 
     private var cardBackground: Color {
         colorScheme == .dark
@@ -30,22 +31,60 @@ public struct NoteRowView: View {
             : Color(red: 0.60, green: 0.59, blue: 0.62)
     }
 
-    public var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            // Bold Title (e.g. Untitled Note)
-            Text(note.displayTitle)
-                .font(.geist(17, weight: .bold))
-                .foregroundColor(titleColor)
-                .lineLimit(1)
+    private var hasLongContent: Bool {
+        let trimmed = note.content.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.count > 60 || trimmed.contains("\n")
+    }
 
-            // Subtitle preview (e.g. Empty note)
-            Text(note.previewText)
-                .font(.geist(13, weight: .medium))
-                .foregroundColor(subtitleColor)
-                .lineLimit(1)
+    public var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            // Header Row: Title & Action
+            HStack(alignment: .top) {
+                Text(note.displayTitle)
+                    .font(.geist(17, weight: .bold))
+                    .foregroundColor(titleColor)
+                    .lineLimit(isExpanded ? nil : 1)
+
+                Spacer()
+            }
+
+            // Note Body Text (Full content if expanded, snippet if collapsed)
+            if isExpanded {
+                Text(note.content.isEmpty ? note.previewText : note.content)
+                    .font(.geist(13, weight: .regular))
+                    .foregroundColor(subtitleColor)
+                    .lineSpacing(3)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .transition(AnyTransition.opacity.combined(with: .move(edge: .top)))
+            } else {
+                Text(note.previewText)
+                    .font(.geist(13, weight: .medium))
+                    .foregroundColor(subtitleColor)
+                    .lineLimit(2)
+            }
+
+            // Show More / Show Less Toggle Button
+            if hasLongContent {
+                Button(action: {
+                    withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                        isExpanded.toggle()
+                    }
+                }) {
+                    HStack(spacing: 4) {
+                        Text(isExpanded ? "Show less" : "Show more")
+                            .font(.geist(12, weight: .semibold))
+                        Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                            .font(.system(size: 10, weight: .bold))
+                    }
+                    .foregroundColor(.secondary.opacity(0.8))
+                    .padding(.top, 4)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
         }
         .padding(.horizontal, 20)
-        .padding(.vertical, 22)
+        .padding(.vertical, 20)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
             RoundedRectangle(cornerRadius: 24, style: .continuous)
@@ -69,14 +108,18 @@ public struct NoteRowView: View {
         }
         .animation(.spring(response: 0.2, dampingFraction: 0.8), value: isHovered)
         .contextMenu {
+            Button(action: {
+                withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                    isExpanded.toggle()
+                }
+            }) {
+                Label(isExpanded ? "Show Less" : "Show More", systemImage: isExpanded ? "chevron.up" : "chevron.down")
+            }
             Button(action: onDetach) {
                 Label(note.isDetached ? "Focus Floating Note" : "Stick on Desktop", systemImage: "pin")
             }
             Button(action: onSelect) {
-                Label("Open Note", systemImage: "arrow.up.forward.app")
-            }
-            Button(action: onRename) {
-                Label("Rename", systemImage: "pencil")
+                Label("Edit Note", systemImage: "pencil")
             }
             Divider()
             Button(role: .destructive, action: onDelete) {
