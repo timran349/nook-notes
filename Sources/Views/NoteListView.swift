@@ -20,7 +20,7 @@ public struct NoteListView: View {
 
     public var body: some View {
         VStack(spacing: 12) {
-            // Segmented Tab Bar with rounded rectangle corner radius ("Stickies", "Notes", "Clipboard")
+            // Segmented Tab Bar ("Stickies", "Notes", "Clipboard")
             HStack(spacing: 4) {
                 TabSegmentPill(title: "Stickies", isSelected: selectedTab == "Stickies") {
                     withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
@@ -45,7 +45,7 @@ public struct NoteListView: View {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color.primary.opacity(0.04))
             )
-            .padding(.horizontal, 14)
+            .padding(.horizontal, 8)
 
             // Content Area depending on Tab
             if selectedTab == "Clipboard" {
@@ -89,7 +89,7 @@ public struct NoteListView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 10) {
+                        VStack(spacing: 8) {
                             ForEach(activeNotesList) { note in
                                 NoteRowView(
                                     note: note,
@@ -114,7 +114,7 @@ public struct NoteListView: View {
                                 )
                             }
                         }
-                        .padding(.horizontal, 14)
+                        .padding(.horizontal, 8)
                         .padding(.bottom, 16)
                     }
                 }
@@ -200,7 +200,7 @@ struct ClipboardListView: View {
                     .foregroundColor(.secondary)
                     .buttonStyle(PlainButtonStyle())
                 }
-                .padding(.horizontal, 16)
+                .padding(.horizontal, 12)
                 .padding(.top, 4)
 
                 ScrollView(.vertical, showsIndicators: false) {
@@ -255,7 +255,7 @@ struct ClipboardListView: View {
                             )
                         }
                     }
-                    .padding(.horizontal, 14)
+                    .padding(.horizontal, 8)
                     .padding(.bottom, 16)
                 }
             }

@@ -11,8 +11,8 @@ public struct MainView: View {
 
     private var exactGrayBackground: Color {
         colorScheme == .dark
-            ? Color(red: 0.11, green: 0.11, blue: 0.12)
-            : Color(red: 0.949, green: 0.949, blue: 0.968)
+            ? Color(red: 0.10, green: 0.10, blue: 0.11)
+            : Color(red: 0.949, green: 0.949, blue: 0.949) // #F2F2F2
     }
 
     public var body: some View {
@@ -92,9 +92,9 @@ public struct MainView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: 22, style: .continuous)
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 0.75)
+                        .stroke(Color.primary.opacity(0.06), lineWidth: 0.75)
                 )
-                .shadow(color: Color.black.opacity(0.1), radius: 10, x: 1, y: 4)
+                .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 3)
                 .padding(4)
                 .transition(AnyTransition.opacity.combined(with: .scale))
             }

@@ -7,6 +7,8 @@ public struct HeaderView: View {
     public var isEditing: Bool
     public var onBack: () -> Void
 
+    @Environment(\.colorScheme) private var colorScheme
+
     public init(
         noteStore: NoteStore,
         windowManager: WindowManager,
@@ -17,6 +19,12 @@ public struct HeaderView: View {
         self.windowManager = windowManager
         self.isEditing = isEditing
         self.onBack = onBack
+    }
+
+    private var mutedLogoGray: Color {
+        colorScheme == .dark
+            ? Color(red: 0.45, green: 0.45, blue: 0.48)
+            : Color(red: 0.72, green: 0.72, blue: 0.75)
     }
 
     public var body: some View {
@@ -33,10 +41,16 @@ public struct HeaderView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
             } else {
-                // Branding Header at top left: "Nook Notes"
-                Text("Nook Notes")
-                    .font(.geist(16, weight: .bold))
-                    .foregroundColor(.primary)
+                // Bold Muted Gray Logo matching user image
+                HStack(spacing: 6) {
+                    Image(systemName: "square.grid.2x2.fill")
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(mutedLogoGray)
+
+                    Text("Nook Notes")
+                        .font(.geist(16, weight: .bold))
+                        .foregroundColor(mutedLogoGray)
+                }
             }
 
             Spacer()
@@ -114,8 +128,8 @@ public struct HeaderView: View {
                 .help("Collapse (Esc)")
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 14)
-        .padding(.bottom, 10)
+        .padding(.horizontal, 12)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
     }
 }
