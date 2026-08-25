@@ -20,7 +20,7 @@ public struct NoteListView: View {
 
     public var body: some View {
         VStack(spacing: 12) {
-            // Clean Segmented Pill Tab Bar ("Stickies", "Notes", "Clipboard")
+            // Segmented Tab Bar with rounded rectangle corner radius ("Stickies", "Notes", "Clipboard")
             HStack(spacing: 4) {
                 TabSegmentPill(title: "Stickies", isSelected: selectedTab == "Stickies") {
                     withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
@@ -40,16 +40,16 @@ public struct NoteListView: View {
                     }
                 }
             }
-            .padding(4)
+            .padding(3)
             .background(
-                Capsule()
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .fill(Color.primary.opacity(0.04))
             )
-            .padding(.horizontal, 16)
+            .padding(.horizontal, 14)
 
             // Content Area depending on Tab
             if selectedTab == "Clipboard" {
-                // Clipboard Snippets History View
+                // Clipboard History View
                 ClipboardListView(clipboardManager: clipboardManager)
             } else {
                 // Notes / Stickies Cards List View
@@ -77,7 +77,7 @@ public struct NoteListView: View {
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 8)
                                     .background(
-                                        Capsule()
+                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
                                             .fill(Color.primary.opacity(0.85))
                                     )
                             }
@@ -115,80 +115,11 @@ public struct NoteListView: View {
                             }
                         }
                         .padding(.horizontal, 14)
-                        .padding(.bottom, 60) // Space for bottom pill controls
+                        .padding(.bottom, 16)
                     }
                 }
             }
         }
-        .overlay(
-            // Bottom Floating Glass Control Pill Bar matching reference image
-            VStack {
-                Spacer()
-                HStack(spacing: 16) {
-                    // Search toggle
-                    Button(action: {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                            noteStore.isSearching.toggle()
-                            if !noteStore.isSearching {
-                                noteStore.searchQuery = ""
-                            }
-                        }
-                    }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(noteStore.isSearching ? .accentColor : .secondary)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    // Plus button (New Note)
-                    Button(action: {
-                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
-                            let newNote = noteStore.createNote()
-                            onSelectNote(newNote)
-                        }
-                    }) {
-                        Image(systemName: "plus")
-                            .font(.system(size: 13, weight: .bold))
-                            .foregroundColor(.primary)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-
-                    // Tab toggle icon
-                    Button(action: {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
-                            if selectedTab == "Notes" {
-                                selectedTab = "Stickies"
-                            } else if selectedTab == "Stickies" {
-                                selectedTab = "Clipboard"
-                            } else {
-                                selectedTab = "Notes"
-                            }
-                        }
-                    }) {
-                        Image(systemName: "checkmark.square.fill")
-                            .font(.system(size: 14))
-                            .foregroundColor(.primary.opacity(0.85))
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                }
-                .padding(.horizontal, 18)
-                .padding(.vertical, 9)
-                .background(
-                    Capsule()
-                        .fill(Color.primary.opacity(0.06))
-                        .background(
-                            Capsule()
-                                .fill(Color.white.opacity(0.9))
-                        )
-                )
-                .overlay(
-                    Capsule()
-                        .stroke(Color.primary.opacity(0.08), lineWidth: 0.75)
-                )
-                .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)
-                .padding(.bottom, 12)
-            }
-        )
         .alert("Rename Note", isPresented: $showRenameAlert) {
             TextField("Note Title", text: $renameText)
             Button("Cancel", role: .cancel) {}
@@ -202,11 +133,13 @@ public struct NoteListView: View {
     }
 }
 
-// Clean Tab Segment Pill
+// Tab Segment Pill with clean rounded rectangle radius (not full round capsule)
 struct TabSegmentPill: View {
     let title: String
     let isSelected: Bool
     let action: () -> Void
+
+    @Environment(\.colorScheme) private var colorScheme
 
     var body: some View {
         Button(action: action) {
@@ -216,9 +149,8 @@ struct TabSegmentPill: View {
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, 6)
                 .background(
-                    Capsule()
-                        .fill(isSelected ? Color.white : Color.clear)
-                        .shadow(color: isSelected ? Color.black.opacity(0.06) : Color.clear, radius: 4, x: 0, y: 2)
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(isSelected ? (colorScheme == .dark ? Color(red: 0.20, green: 0.20, blue: 0.22) : Color.white) : Color.clear)
                 )
         }
         .buttonStyle(PlainButtonStyle())
@@ -229,6 +161,12 @@ struct TabSegmentPill: View {
 struct ClipboardListView: View {
     @ObservedObject var clipboardManager: ClipboardManager
     @State private var copiedId: UUID?
+
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var cardBackground: Color {
+        colorScheme == .dark ? Color(red: 0.16, green: 0.16, blue: 0.18) : Color.white
+    }
 
     var body: some View {
         if clipboardManager.items.isEmpty {
@@ -259,7 +197,7 @@ struct ClipboardListView: View {
                         clipboardManager.clearAll()
                     }
                     .font(.geist(10, weight: .semibold))
-                    .foregroundColor(.red.opacity(0.8))
+                    .foregroundColor(.secondary)
                     .buttonStyle(PlainButtonStyle())
                 }
                 .padding(.horizontal, 16)
@@ -300,12 +238,12 @@ struct ClipboardListView: View {
                                 }) {
                                     Text(copiedId == item.id ? "Copied!" : "Copy")
                                         .font(.geist(10, weight: .bold))
-                                        .foregroundColor(copiedId == item.id ? .green : .accentColor)
+                                        .foregroundColor(copiedId == item.id ? .green : .primary)
                                         .padding(.horizontal, 8)
                                         .padding(.vertical, 4)
                                         .background(
-                                            Capsule()
-                                                .fill(Color.accentColor.opacity(0.1))
+                                            RoundedRectangle(cornerRadius: 6, style: .continuous)
+                                                .fill(Color.primary.opacity(0.06))
                                         )
                                 }
                                 .buttonStyle(PlainButtonStyle())
@@ -313,7 +251,7 @@ struct ClipboardListView: View {
                             .padding(12)
                             .background(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
-                                    .fill(Color.white)
+                                    .fill(cardBackground)
                             )
                             .overlay(
                                 RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -322,7 +260,7 @@ struct ClipboardListView: View {
                         }
                     }
                     .padding(.horizontal, 14)
-                    .padding(.bottom, 60)
+                    .padding(.bottom, 16)
                 }
             }
         }

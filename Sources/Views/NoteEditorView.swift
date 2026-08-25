@@ -19,31 +19,14 @@ public struct NoteEditorView: View {
         self.onNoteChanged = onNoteChanged
     }
 
+    private var paperColor: Color {
+        colorScheme == .dark ? Color(red: 0.16, green: 0.16, blue: 0.18) : Color.white
+    }
+
     public var body: some View {
-        let paperColor = colorScheme == .dark ? note.color.darkColor : note.color.lightColor
-
         VStack(spacing: 8) {
-            // Color picker & desktop pin toolbar
+            // Pin & options toolbar
             HStack {
-                // Color dots matching reference image
-                HStack(spacing: 6) {
-                    ForEach(NoteColor.allCases, id: \.self) { c in
-                        Circle()
-                            .fill(colorScheme == .dark ? c.darkColor : c.lightColor)
-                            .frame(width: 14, height: 14)
-                            .overlay(
-                                Circle()
-                                    .stroke(note.color == c ? Color.primary.opacity(0.6) : Color.clear, lineWidth: 1.5)
-                            )
-                            .onTapGesture {
-                                withAnimation(.spring(response: 0.18, dampingFraction: 0.8)) {
-                                    note.color = c
-                                    onNoteChanged(note)
-                                }
-                            }
-                    }
-                }
-
                 Spacer()
 
                 // Stick on Desktop button
@@ -53,22 +36,22 @@ public struct NoteEditorView: View {
                     HStack(spacing: 4) {
                         Image(systemName: "pin.fill")
                             .font(.system(size: 10, weight: .bold))
-                        Text(note.isDetached ? "Floating" : "Stick on Desktop")
+                        Text(note.isDetached ? "Floating Sticky" : "Stick on Desktop")
                             .font(.geist(11, weight: .medium))
                     }
-                    .foregroundColor(.accentColor)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
+                    .foregroundColor(.primary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
                     .background(
-                        RoundedRectangle(cornerRadius: 6)
-                            .fill(Color.accentColor.opacity(0.12))
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .fill(Color.primary.opacity(0.06))
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
                 .help("Detach as floating sticky note on desktop")
             }
             .padding(.horizontal, 16)
-            .padding(.top, 6)
+            .padding(.top, 8)
 
             // Geist Title Field
             TextField("Title (optional)", text: Binding(
@@ -84,7 +67,7 @@ public struct NoteEditorView: View {
             .padding(.horizontal, 16)
 
             Divider()
-                .opacity(0.15)
+                .opacity(0.1)
                 .padding(.horizontal, 16)
 
             // Body text editor
@@ -103,12 +86,12 @@ public struct NoteEditorView: View {
             .padding(.bottom, 12)
         }
         .background(
-            RoundedRectangle(cornerRadius: 12)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(paperColor)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(note.color.accentBorder.opacity(0.5), lineWidth: 0.8)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(Color.primary.opacity(0.08), lineWidth: 0.75)
         )
         .padding(8)
         .onAppear {

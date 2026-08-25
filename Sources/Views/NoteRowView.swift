@@ -14,7 +14,7 @@ public struct NoteRowView: View {
 
     private var cardBackground: Color {
         colorScheme == .dark
-            ? Color(red: 0.14, green: 0.14, blue: 0.16)
+            ? Color(red: 0.16, green: 0.16, blue: 0.18)
             : Color.white
     }
 
@@ -29,14 +29,14 @@ public struct NoteRowView: View {
 
                 Spacer()
 
-                // Subtle Date Pill matching reference image (e.g. W37 / Today)
+                // Subtle Date Pill (e.g. 17:19)
                 Text(note.formattedTime)
                     .font(.geist(10, weight: .semibold))
                     .foregroundColor(.secondary)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
                     .background(
-                        Capsule()
+                        RoundedRectangle(cornerRadius: 6, style: .continuous)
                             .fill(Color.primary.opacity(0.05))
                     )
             }
@@ -56,31 +56,25 @@ public struct NoteRowView: View {
                     Text("Floating Sticky")
                         .font(.geist(10, weight: .medium))
                 }
-                .foregroundColor(.accentColor)
+                .foregroundColor(.secondary)
                 .padding(.top, 2)
             }
         }
         .padding(14)
         .background(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .fill(cardBackground)
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
                 .stroke(
                     isSelected
-                        ? Color.accentColor.opacity(0.6)
+                        ? Color.primary.opacity(0.2)
                         : (isHovered ? Color.primary.opacity(0.12) : Color.primary.opacity(0.04)),
                     lineWidth: isSelected ? 1.5 : 0.75
                 )
         )
-        .shadow(
-            color: isHovered ? Color.black.opacity(0.08) : Color.black.opacity(0.03),
-            radius: isHovered ? 8 : 4,
-            x: 0,
-            y: isHovered ? 4 : 2
-        )
-        .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.01 : 1.0))
+        .scaleEffect(isPressed ? 0.98 : (isHovered ? 1.008 : 1.0))
         .contentShape(Rectangle())
         .onTapGesture {
             onSelect()

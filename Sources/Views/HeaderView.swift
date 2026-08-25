@@ -41,9 +41,39 @@ public struct HeaderView: View {
 
             Spacer()
 
-            // Header actions: Settings & Collapse
+            // Header actions
             HStack(spacing: 12) {
-                if isEditing {
+                if !isEditing {
+                    // Search toggle
+                    Button(action: {
+                        withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
+                            noteStore.isSearching.toggle()
+                            if !noteStore.isSearching {
+                                noteStore.searchQuery = ""
+                            }
+                        }
+                    }) {
+                        Image(systemName: "magnifyingglass")
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(noteStore.isSearching ? .primary : .secondary)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help("Search Notes")
+
+                    // New Note button
+                    Button(action: {
+                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                            let newNote = noteStore.createNote()
+                            noteStore.selectedNoteId = newNote.id
+                        }
+                    }) {
+                        Image(systemName: "plus")
+                            .font(.system(size: 13, weight: .bold))
+                            .foregroundColor(.primary)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help("New Note (Cmd+N)")
+                } else {
                     Button(action: {
                         if let selectedId = noteStore.selectedNoteId {
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
@@ -66,8 +96,8 @@ public struct HeaderView: View {
                     }
                 }) {
                     Image(systemName: "gearshape.fill")
-                        .font(.system(size: 14))
-                        .foregroundColor(windowManager.isSettingsPresented ? .accentColor : .secondary.opacity(0.8))
+                        .font(.system(size: 13))
+                        .foregroundColor(windowManager.isSettingsPresented ? .primary : .secondary.opacity(0.8))
                         .rotationEffect(.degrees(windowManager.isSettingsPresented ? 45 : 0))
                 }
                 .buttonStyle(PlainButtonStyle())
@@ -77,7 +107,7 @@ public struct HeaderView: View {
                     windowManager.collapsePanel()
                 }) {
                     Image(systemName: "xmark.circle.fill")
-                        .font(.system(size: 15))
+                        .font(.system(size: 14))
                         .foregroundColor(.secondary.opacity(0.6))
                 }
                 .buttonStyle(PlainButtonStyle())
