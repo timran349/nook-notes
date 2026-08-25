@@ -12,7 +12,7 @@ public struct SettingsView: View {
                 // Header
                 HStack {
                     Text("Settings")
-                        .font(.system(size: 16, weight: .bold, design: .serif))
+                        .font(.geist(15, weight: .bold))
                         .foregroundColor(.primary)
                     Spacer()
                     Button(action: onClose) {

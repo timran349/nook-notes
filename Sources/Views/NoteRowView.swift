@@ -57,9 +57,9 @@ public struct NoteRowView: View {
                 }
             }
 
-            // Bold Serif Title (Exact match to Computer Science image title style)
+            // Bold Geist Title
             Text(note.displayTitle)
-                .font(.system(size: 15, weight: .semibold, design: .serif))
+                .font(.geist(15, weight: .bold))
                 .foregroundColor(.primary.opacity(0.92))
                 .lineLimit(2)
                 .multilineTextAlignment(.leading)

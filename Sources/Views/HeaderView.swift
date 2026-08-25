@@ -36,7 +36,7 @@ public struct HeaderView: View {
                     }
                     .buttonStyle(HeaderIconButtonStyle())
                 } else {
-                    // Breadcrumb style matching reference image ("My Library / Sticky Notes")
+                    // Breadcrumb style with Geist font ("My Library / Sticky Notes")
                     HStack(spacing: 5) {
                         Text("My Library")
                             .font(.geist(11, weight: .medium))
@@ -51,7 +51,7 @@ public struct HeaderView: View {
                             .frame(width: 6, height: 6)
 
                         Text("Sticky Notes")
-                            .font(.system(size: 16, weight: .bold, design: .serif))
+                            .font(.geist(15, weight: .bold))
                             .foregroundColor(.primary.opacity(0.9))
                     }
                 }

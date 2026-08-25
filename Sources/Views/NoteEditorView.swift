@@ -70,7 +70,7 @@ public struct NoteEditorView: View {
             .padding(.horizontal, 16)
             .padding(.top, 6)
 
-            // Serif Title Field matching reference image headline font
+            // Geist Title Field
             TextField("Title (optional)", text: Binding(
                 get: { note.title },
                 set: { newTitle in
@@ -78,7 +78,7 @@ public struct NoteEditorView: View {
                     onNoteChanged(note)
                 }
             ))
-            .font(.system(size: 18, weight: .bold, design: .serif))
+            .font(.geist(17, weight: .bold))
             .textFieldStyle(PlainTextFieldStyle())
             .focused($isTitleFocused)
             .padding(.horizontal, 16)
