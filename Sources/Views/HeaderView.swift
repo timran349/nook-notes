@@ -20,75 +20,30 @@ public struct HeaderView: View {
     }
 
     public var body: some View {
-        VStack(spacing: 8) {
-            // Top Breadcrumb & Actions Bar
-            HStack(spacing: 10) {
-                if isEditing {
-                    Button(action: onBack) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                                .font(.system(size: 11, weight: .bold))
-                            Text("Sticky Notes")
-                                .font(.geist(12, weight: .medium))
-                        }
-                        .foregroundColor(.secondary)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(HeaderIconButtonStyle())
-                } else {
-                    // Breadcrumb style with Geist font ("My Library / Sticky Notes")
+        HStack(alignment: .center) {
+            if isEditing {
+                Button(action: onBack) {
                     HStack(spacing: 5) {
-                        Text("My Library")
-                            .font(.geist(11, weight: .medium))
-                            .foregroundColor(.secondary)
-
-                        Text("/")
-                            .font(.geist(11, weight: .regular))
-                            .foregroundColor(.secondary.opacity(0.5))
-
-                        Circle()
-                            .fill(Color.blue.opacity(0.8))
-                            .frame(width: 6, height: 6)
-
-                        Text("Sticky Notes")
-                            .font(.geist(15, weight: .bold))
-                            .foregroundColor(.primary.opacity(0.9))
+                        Image(systemName: "chevron.left")
+                            .font(.system(size: 11, weight: .bold))
+                        Text("Notes")
+                            .font(.geist(13, weight: .semibold))
                     }
+                    .foregroundColor(.primary)
                 }
+                .buttonStyle(PlainButtonStyle())
+            } else {
+                // Branding Header at top left: "Nook Notes"
+                Text("Nook Notes")
+                    .font(.geist(16, weight: .bold))
+                    .foregroundColor(.primary)
+            }
 
-                Spacer()
+            Spacer()
 
-                if !isEditing {
-                    // Search button
-                    Button(action: {
-                        withAnimation(.spring(response: 0.2, dampingFraction: 0.75)) {
-                            noteStore.isSearching.toggle()
-                            if !noteStore.isSearching {
-                                noteStore.searchQuery = ""
-                            }
-                        }
-                    }) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(noteStore.isSearching ? .accentColor : .secondary)
-                    }
-                    .buttonStyle(HeaderIconButtonStyle())
-
-                    // New note button
-                    Button(action: {
-                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
-                            let newNote = noteStore.createNote()
-                            noteStore.selectedNoteId = newNote.id
-                        }
-                    }) {
-                        Image(systemName: "square.and.pencil")
-                            .font(.system(size: 12, weight: .semibold))
-                            .foregroundColor(.primary.opacity(0.85))
-                    }
-                    .buttonStyle(HeaderIconButtonStyle())
-                    .help("New Note (Cmd+N)")
-                } else {
-                    // Delete active note button
+            // Header actions: Settings & Collapse
+            HStack(spacing: 12) {
+                if isEditing {
                     Button(action: {
                         if let selectedId = noteStore.selectedNoteId {
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
@@ -98,82 +53,39 @@ public struct HeaderView: View {
                         }
                     }) {
                         Image(systemName: "trash")
-                            .font(.system(size: 12, weight: .regular))
+                            .font(.system(size: 13))
                             .foregroundColor(.secondary)
                     }
-                    .buttonStyle(HeaderIconButtonStyle())
-                    .help("Delete Note (Cmd+Delete)")
+                    .buttonStyle(PlainButtonStyle())
+                    .help("Delete Note")
                 }
 
-                // Settings button
                 Button(action: {
                     withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
                         windowManager.isSettingsPresented.toggle()
                     }
                 }) {
-                    Image(systemName: "gearshape")
-                        .font(.system(size: 12, weight: .regular))
-                        .foregroundColor(windowManager.isSettingsPresented ? .accentColor : .secondary)
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(windowManager.isSettingsPresented ? .accentColor : .secondary.opacity(0.8))
                         .rotationEffect(.degrees(windowManager.isSettingsPresented ? 45 : 0))
                 }
-                .buttonStyle(HeaderIconButtonStyle())
+                .buttonStyle(PlainButtonStyle())
+                .help("Settings")
 
-                // Collapse button
                 Button(action: {
                     windowManager.collapsePanel()
                 }) {
-                    Image(systemName: "chevron.down.square.fill")
-                        .font(.system(size: 13, weight: .medium))
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 15))
                         .foregroundColor(.secondary.opacity(0.6))
                 }
-                .buttonStyle(HeaderIconButtonStyle())
+                .buttonStyle(PlainButtonStyle())
                 .help("Collapse (Esc)")
             }
         }
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .contentShape(Rectangle())
-        .contextMenu {
-            Button(action: {
-                windowManager.resetToBottomLeft()
-            }) {
-                Label("Reset Position to Bottom-Left", systemImage: "arrow.uturn.backward")
-            }
-
-            Button(action: {
-                windowManager.collapsePanel()
-            }) {
-                Label("Collapse Panel", systemImage: "chevron.down")
-            }
-
-            Button(action: {
-                withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
-                    windowManager.isSettingsPresented.toggle()
-                }
-            }) {
-                Label("Settings...", systemImage: "gearshape")
-            }
-
-            Divider()
-
-            Button(role: .destructive, action: {
-                NSApp.terminate(nil)
-            }) {
-                Label("Quit Nook Notes", systemImage: "power")
-            }
-        }
-    }
-}
-
-struct HeaderIconButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .padding(6)
-            .background(
-                RoundedRectangle(cornerRadius: 6)
-                    .fill(Color.primary.opacity(configuration.isPressed ? 0.1 : 0.0))
-            )
-            .scaleEffect(configuration.isPressed ? 0.9 : 1.0)
-            .animation(.spring(response: 0.15, dampingFraction: 0.7), value: configuration.isPressed)
+        .padding(.top, 14)
+        .padding(.bottom, 10)
     }
 }

@@ -9,10 +9,10 @@ public struct MainView: View {
 
     public init() {}
 
-    private var parchmentBackground: Color {
+    private var warmGrayBackground: Color {
         colorScheme == .dark
-            ? Color(red: 0.12, green: 0.11, blue: 0.10)
-            : Color(red: 0.97, green: 0.96, blue: 0.93)
+            ? Color(red: 0.10, green: 0.10, blue: 0.11)
+            : Color(red: 0.95, green: 0.95, blue: 0.96)
     }
 
     public var body: some View {
@@ -44,9 +44,6 @@ public struct MainView: View {
                         }
                         .transition(AnyTransition.move(edge: .top).combined(with: .opacity))
                     }
-
-                    Divider()
-                        .opacity(0.12)
 
                     // Content Body
                     ZStack {
@@ -91,13 +88,13 @@ public struct MainView: View {
                     }
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
-                .background(parchmentBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 14))
+                .background(warmGrayBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.primary.opacity(0.1), lineWidth: 0.75)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(Color.primary.opacity(0.08), lineWidth: 0.75)
                 )
-                .shadow(color: Color.black.opacity(0.18), radius: 14, x: 2, y: 5)
+                .shadow(color: Color.black.opacity(0.12), radius: 16, x: 2, y: 6)
                 .padding(4)
                 .transition(AnyTransition.opacity.combined(with: .scale))
             }
