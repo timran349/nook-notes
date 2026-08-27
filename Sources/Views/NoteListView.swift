@@ -44,7 +44,7 @@ public struct NoteListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 8) {
+                    VStack(spacing: 4) {
                         ForEach(noteStore.filteredNotes) { note in
                             NoteRowView(
                                 note: note,
