@@ -42,7 +42,6 @@ public struct HeaderView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
             } else {
-                // 100% Exact match to mockup image: Grid icon + lowercase chunky serif "nook notes"
                 HStack(spacing: 8) {
                     Image(systemName: "square.grid.2x2")
                         .font(.system(size: 18, weight: .medium))
@@ -56,8 +55,8 @@ public struct HeaderView: View {
 
             Spacer()
 
-            // Header actions: +  ⚙  ✕ (Exact 3 icons from image)
-            HStack(spacing: 16) {
+            // Header actions: +  ⚙  ✕
+            HStack(spacing: 14) {
                 if !isEditing {
                     // + (Plus button)
                     Button(action: {
@@ -125,8 +124,8 @@ public struct HeaderView: View {
                 }
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.top, 18)
-        .padding(.bottom, 14)
+        .padding(.horizontal, 10)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
     }
 }
