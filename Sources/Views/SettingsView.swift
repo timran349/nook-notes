@@ -26,6 +26,21 @@ public struct SettingsView: View {
 
                 Divider().opacity(0.12)
 
+                // Screen Corner Picker
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("SCREEN CORNER ANCHOR")
+                        .font(.geist(10, weight: .bold))
+                        .foregroundColor(.secondary.opacity(0.6))
+
+                    Picker("", selection: $windowManager.screenCorner) {
+                        Text("Bottom-Left").tag("bottom_left")
+                        Text("Bottom-Right").tag("bottom_right")
+                        Text("Top-Left").tag("top_left")
+                        Text("Top-Right").tag("top_right")
+                    }
+                    .pickerStyle(SegmentedPickerStyle())
+                }
+
                 // Appearance Picker
                 VStack(alignment: .leading, spacing: 6) {
                     Text("APPEARANCE")
@@ -84,14 +99,14 @@ public struct SettingsView: View {
 
                 Divider().opacity(0.12)
 
-                // Reset position button if moved
+                // Reset position button
                 Button(action: {
-                    windowManager.resetToBottomLeft()
+                    windowManager.resetCornerPosition()
                 }) {
                     HStack(spacing: 6) {
                         Image(systemName: "arrow.uturn.backward")
                             .font(.system(size: 11, weight: .medium))
-                        Text("Reset Position to Bottom-Left")
+                        Text("Reset Position to Screen Corner")
                             .font(.geist(11, weight: .medium))
                     }
                     .foregroundColor(.secondary)
@@ -124,7 +139,7 @@ public struct SettingsView: View {
                     Text("Nook Notes 1.0.0")
                         .font(.geist(10, weight: .semibold))
                         .foregroundColor(.secondary)
-                    Text("Minimal macOS Sticky Utility")
+                    Text("Minimal macOS Utility")
                         .font(.geist(9, weight: .regular))
                         .foregroundColor(.secondary.opacity(0.6))
                 }

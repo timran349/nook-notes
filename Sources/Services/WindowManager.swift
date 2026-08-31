@@ -13,18 +13,25 @@ public class WindowManager: ObservableObject {
     @Published public var isExpanded: Bool = false
     @Published public var isHovered: Bool = false
     @Published public var isSettingsPresented: Bool = false
+    @Published public var screenCorner: String = "bottom_left" { // "bottom_left", "bottom_right", "top_left", "top_right"
+        didSet {
+            UserDefaults.standard.set(screenCorner, forKey: "nook_screen_corner")
+            updateWindowPosition(animated: true)
+        }
+    }
 
     public private(set) var window: NookWindow?
     private var globalMouseMonitor: Any?
     private var localMouseMonitor: Any?
     private var clickOutsideMonitor: Any?
+    private var isFullScreenAppActive: Bool = false
 
     // Custom dragged position and size storage
     private var userExpandedOrigin: NSPoint?
     private var userExpandedWidth: CGFloat?
     private var userExpandedHeight: CGFloat?
 
-    // Window dimensions (Default spacious layout)
+    // Window dimensions
     public let collapsedWidth: CGFloat = 110
     public let collapsedHeight: CGFloat = 50
 
@@ -39,7 +46,9 @@ public class WindowManager: ObservableObject {
         userExpandedHeight ?? defaultExpandedHeight
     }
 
-    public init() {}
+    public init() {
+        self.screenCorner = UserDefaults.standard.string(forKey: "nook_screen_corner") ?? "bottom_left"
+    }
 
     public func configureWindow(contentView: NSView) {
         let panel = NookWindow(
@@ -54,10 +63,10 @@ public class WindowManager: ObservableObject {
         panel.backgroundColor = .clear
         panel.hasShadow = false
         panel.ignoresMouseEvents = false
-        panel.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
+        panel.collectionBehavior = [.canJoinAllSpaces] // Removed .fullScreenAuxiliary so it doesn't overlap full screen video/apps
         panel.hidesOnDeactivate = false
-        panel.isMovableByWindowBackground = true // Allows dragging window around desktop
-        panel.minSize = NSSize(width: 320, height: 380) // Enforce minimum window size
+        panel.isMovableByWindowBackground = false // Prevents whole window from moving when user drags note cards
+        panel.minSize = NSSize(width: 320, height: 380)
         panel.maxSize = NSSize(width: 1000, height: 1200)
         panel.contentView = contentView
 
@@ -69,6 +78,7 @@ public class WindowManager: ObservableObject {
         setupMouseTracking()
         setupClickOutsideTracking()
         setupWindowObserverTracking()
+        setupFullScreenDetector()
     }
 
     public func togglePanel() {
@@ -94,7 +104,6 @@ public class WindowManager: ObservableObject {
     public func collapsePanel() {
         guard isExpanded else { return }
 
-        // Save current expanded origin and size before collapsing if moved/resized
         if let currentFrame = window?.frame {
             self.userExpandedOrigin = currentFrame.origin
             self.userExpandedWidth = currentFrame.size.width
@@ -108,13 +117,11 @@ public class WindowManager: ObservableObject {
         updateWindowPosition(animated: true)
     }
 
-    public func resetToBottomLeft() {
+    public func resetCornerPosition() {
         self.userExpandedOrigin = nil
         self.userExpandedWidth = nil
         self.userExpandedHeight = nil
-        if isExpanded {
-            updateWindowPosition(animated: true)
-        }
+        updateWindowPosition(animated: true)
     }
 
     public func updateWindowPosition(animated: Bool = false) {
@@ -123,20 +130,41 @@ public class WindowManager: ObservableObject {
         let mouseLocation = NSEvent.mouseLocation
         let targetScreen = NSScreen.screens.first { NSMouseInRect(mouseLocation, $0.frame, false) } ?? NSScreen.main ?? NSScreen.screens[0]
 
-        let screenFrame = targetScreen.visibleFrame
+        let physicalFrame = targetScreen.frame
+        let visibleFrame = targetScreen.visibleFrame
 
         let width = isExpanded ? currentExpandedWidth : collapsedWidth
         let height = isExpanded ? currentExpandedHeight : collapsedHeight
 
         let targetOrigin: NSPoint
+
         if isExpanded {
             if let custom = userExpandedOrigin {
                 targetOrigin = custom
             } else {
-                targetOrigin = NSPoint(x: screenFrame.origin.x, y: screenFrame.origin.y)
+                switch screenCorner {
+                case "bottom_right":
+                    targetOrigin = NSPoint(x: visibleFrame.origin.x + visibleFrame.width - width, y: visibleFrame.origin.y)
+                case "top_left":
+                    targetOrigin = NSPoint(x: visibleFrame.origin.x, y: visibleFrame.origin.y + visibleFrame.height - height)
+                case "top_right":
+                    targetOrigin = NSPoint(x: visibleFrame.origin.x + visibleFrame.width - width, y: visibleFrame.origin.y + visibleFrame.height - height)
+                default: // bottom_left
+                    targetOrigin = NSPoint(x: visibleFrame.origin.x, y: visibleFrame.origin.y)
+                }
             }
         } else {
-            targetOrigin = NSPoint(x: screenFrame.origin.x, y: screenFrame.origin.y)
+            // Minimized tab: docked ALL THE WAY against the physical screen edge (below/past Dock gap)
+            switch screenCorner {
+            case "bottom_right":
+                targetOrigin = NSPoint(x: physicalFrame.origin.x + physicalFrame.width - width, y: physicalFrame.origin.y)
+            case "top_left":
+                targetOrigin = NSPoint(x: physicalFrame.origin.x, y: physicalFrame.origin.y + physicalFrame.height - height)
+            case "top_right":
+                targetOrigin = NSPoint(x: physicalFrame.origin.x + physicalFrame.width - width, y: physicalFrame.origin.y + physicalFrame.height - height)
+            default: // bottom_left
+                targetOrigin = NSPoint(x: physicalFrame.origin.x, y: physicalFrame.origin.y)
+            }
         }
 
         let targetRect = NSRect(
@@ -154,6 +182,39 @@ public class WindowManager: ObservableObject {
             }
         } else {
             window.setFrame(targetRect, display: true)
+        }
+    }
+
+    private func setupFullScreenDetector() {
+        // Monitor space changes & active application changes to hide window during full screen video / apps
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.activeSpaceDidChangeNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.checkFullScreenState()
+        }
+
+        NSWorkspace.shared.notificationCenter.addObserver(
+            forName: NSWorkspace.didActivateApplicationNotification,
+            object: nil,
+            queue: .main
+        ) { [weak self] _ in
+            self?.checkFullScreenState()
+        }
+    }
+
+    private func checkFullScreenState() {
+        guard let screen = window?.screen ?? NSScreen.main else { return }
+        // Full screen video or app covers entire physical screen (visibleFrame == frame)
+        let isFullScreen = (screen.visibleFrame == screen.frame)
+
+        if isFullScreen && !isFullScreenAppActive {
+            isFullScreenAppActive = true
+            window?.orderOut(nil)
+        } else if !isFullScreen && isFullScreenAppActive {
+            isFullScreenAppActive = false
+            window?.orderFrontRegardless()
         }
     }
 
@@ -226,14 +287,10 @@ public class WindowManager: ObservableObject {
         clickOutsideMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self = self, self.isExpanded, let window = self.window else { return }
 
-            // Do not collapse while mouse button is held down or window is in live resize
             if NSEvent.pressedMouseButtons != 0 || window.inLiveResize { return }
-
-            // Do not collapse if Settings is currently open
             if self.isSettingsPresented { return }
 
             let mouseLoc = NSEvent.mouseLocation
-            // 25px margin around window frame covers macOS window border resize handles & drop shadows
             let borderHitArea = window.frame.insetBy(dx: -25, dy: -25)
 
             if !NSMouseInRect(mouseLoc, borderHitArea, false) {
@@ -249,5 +306,6 @@ public class WindowManager: ObservableObject {
         if let monitor = localMouseMonitor { NSEvent.removeMonitor(monitor) }
         if let monitor = clickOutsideMonitor { NSEvent.removeMonitor(monitor) }
         NotificationCenter.default.removeObserver(self)
+        NSWorkspace.shared.notificationCenter.removeObserver(self)
     }
 }
