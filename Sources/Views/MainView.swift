@@ -89,9 +89,9 @@ public struct MainView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
                 }
                 .background(exactMockupBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: 32, style: .continuous)
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
                         .stroke(Color.primary.opacity(0.06), lineWidth: 0.75)
                 )
                 .shadow(color: Color.black.opacity(0.08), radius: 10, x: 0, y: 4)

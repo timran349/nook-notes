@@ -83,11 +83,11 @@ public struct NoteRowView: View {
                 .buttonStyle(PlainButtonStyle())
             }
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 20)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(cardBackground)
         )
         .scaleEffect(isPressed ? 0.985 : (isHovered ? 1.006 : 1.0))
