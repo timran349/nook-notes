@@ -206,7 +206,6 @@ public class WindowManager: ObservableObject {
     }
 
     private func setupFullScreenDetector() {
-        // Observe workspace active space, application activation, and screen changes
         let center = NSWorkspace.shared.notificationCenter
         center.addObserver(forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
             self?.checkFullScreenState()
@@ -215,23 +214,26 @@ public class WindowManager: ObservableObject {
             self?.checkFullScreenState()
         }
 
-        // Lightweight periodic check (every 1 second) for browser full screen video playback
-        fullScreenCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
+        // Lightweight 0.8s timer to continuously check full screen state during video playback
+        fullScreenCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.8, repeats: true) { [weak self] _ in
             self?.checkFullScreenState()
         }
     }
 
     private func checkFullScreenState() {
         guard let window = window else { return }
-        let activeApp = NSWorkspace.shared.frontmostApplication
         let screen = window.screen ?? NSScreen.main ?? NSScreen.screens[0]
 
-        // 1. Menu Bar and Dock hidden (Full screen space active)
-        let isScreenFullScreen = (screen.visibleFrame.height == screen.frame.height) && (screen.visibleFrame.width == screen.frame.width)
+        let physicalHeight = screen.frame.height
+        let physicalWidth = screen.frame.width
 
-        // 2. Active app is running in full screen mode or auto-hiding menu bar (YouTube video in Safari/Chrome, VLC, QuickTime)
-        let options = activeApp?.presentationOptions ?? []
-        let isAppFullScreen = options.contains(.fullScreen) || options.contains(.autoHideMenuBar) || options.contains(.hideDock)
+        let visibleHeight = screen.visibleFrame.height
+        let visibleWidth = screen.visibleFrame.width
+
+        // Full screen video or app is active when visibleFrame occupies physical screen bounds
+        let isScreenFullScreen = (visibleHeight >= physicalHeight - 4.0) && (visibleWidth >= physicalWidth - 4.0)
+        let presentationOpts = NSApplication.shared.currentPresentationOptions
+        let isAppFullScreen = presentationOpts.contains(.fullScreen) || presentationOpts.contains(.autoHideMenuBar)
 
         let isFullScreenMode = isScreenFullScreen || isAppFullScreen
 
