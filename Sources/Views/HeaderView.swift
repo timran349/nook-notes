@@ -84,9 +84,23 @@ public struct HeaderView: View {
 
             Spacer()
 
-            // Header actions: +  ⚙  ✕
+            // Header actions: 📌 Pin (Always Open) | + New Note | ⚙ Settings | ✕ Close
             HStack(spacing: 14) {
                 if !isEditing {
+                    // 📌 Pin Icon (Keeps window open & at top all the time)
+                    Button(action: {
+                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                            windowManager.isPinned.toggle()
+                        }
+                    }) {
+                        Image(systemName: windowManager.isPinned ? "pin.fill" : "pin")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(windowManager.isPinned ? .primary : headerIconColor)
+                            .rotationEffect(.degrees(windowManager.isPinned ? 45 : 0))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help(windowManager.isPinned ? "Unpin Window (Allow Auto-Collapse)" : "Pin Window (Keep Always Open & On Top)")
+
                     // + (Plus button)
                     Button(action: {
                         withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
@@ -126,6 +140,20 @@ public struct HeaderView: View {
                     .buttonStyle(PlainButtonStyle())
                     .help("Collapse (Esc)")
                 } else {
+                    // Pin Button in editor view
+                    Button(action: {
+                        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+                            windowManager.isPinned.toggle()
+                        }
+                    }) {
+                        Image(systemName: windowManager.isPinned ? "pin.fill" : "pin")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundColor(windowManager.isPinned ? .primary : headerIconColor)
+                            .rotationEffect(.degrees(windowManager.isPinned ? 45 : 0))
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help(windowManager.isPinned ? "Unpin Window (Allow Auto-Collapse)" : "Pin Window (Keep Always Open & On Top)")
+
                     Button(action: {
                         if let selectedId = noteStore.selectedNoteId {
                             withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {

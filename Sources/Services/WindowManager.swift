@@ -13,7 +13,16 @@ public class WindowManager: ObservableObject {
     @Published public var isExpanded: Bool = false
     @Published public var isHovered: Bool = false
     @Published public var isSettingsPresented: Bool = false
-    @Published public var screenCorner: String = "bottom_left" { // "bottom_left", "bottom_right", "top_left", "top_right"
+    @Published public var isPinned: Bool = false {
+        didSet {
+            UserDefaults.standard.set(isPinned, forKey: "nook_window_pinned")
+            if isPinned {
+                expandPanel()
+                window?.level = .floating
+            }
+        }
+    }
+    @Published public var screenCorner: String = "bottom_left" {
         didSet {
             UserDefaults.standard.set(screenCorner, forKey: "nook_screen_corner")
             updateWindowPosition(animated: true)
@@ -48,6 +57,7 @@ public class WindowManager: ObservableObject {
 
     public init() {
         self.screenCorner = UserDefaults.standard.string(forKey: "nook_screen_corner") ?? "bottom_left"
+        self.isPinned = UserDefaults.standard.bool(forKey: "nook_window_pinned")
     }
 
     public func configureWindow(contentView: NSView) {
@@ -63,14 +73,18 @@ public class WindowManager: ObservableObject {
         panel.backgroundColor = .clear
         panel.hasShadow = false
         panel.ignoresMouseEvents = false
-        panel.collectionBehavior = [.canJoinAllSpaces] // Removed .fullScreenAuxiliary so it doesn't overlap full screen video/apps
+        panel.collectionBehavior = [.canJoinAllSpaces]
         panel.hidesOnDeactivate = false
-        panel.isMovableByWindowBackground = false // Prevents whole window from moving when user drags note cards
+        panel.isMovableByWindowBackground = false
         panel.minSize = NSSize(width: 320, height: 380)
         panel.maxSize = NSSize(width: 1000, height: 1200)
         panel.contentView = contentView
 
         self.window = panel
+
+        if isPinned {
+            isExpanded = true
+        }
 
         updateWindowPosition(animated: false)
         panel.orderFrontRegardless()
@@ -102,7 +116,8 @@ public class WindowManager: ObservableObject {
     }
 
     public func collapsePanel() {
-        guard isExpanded else { return }
+        // If window is pinned open at top all the time, do not collapse!
+        guard isExpanded && !isPinned else { return }
 
         if let currentFrame = window?.frame {
             self.userExpandedOrigin = currentFrame.origin
@@ -154,7 +169,7 @@ public class WindowManager: ObservableObject {
                 }
             }
         } else {
-            // Minimized tab: docked ALL THE WAY against the physical screen edge (below/past Dock gap)
+            // Minimized tab: docked ALL THE WAY against the physical screen edge
             switch screenCorner {
             case "bottom_right":
                 targetOrigin = NSPoint(x: physicalFrame.origin.x + physicalFrame.width - width, y: physicalFrame.origin.y)
@@ -186,7 +201,6 @@ public class WindowManager: ObservableObject {
     }
 
     private func setupFullScreenDetector() {
-        // Monitor space changes & active application changes to hide window during full screen video / apps
         NSWorkspace.shared.notificationCenter.addObserver(
             forName: NSWorkspace.activeSpaceDidChangeNotification,
             object: nil,
@@ -206,7 +220,6 @@ public class WindowManager: ObservableObject {
 
     private func checkFullScreenState() {
         guard let screen = window?.screen ?? NSScreen.main else { return }
-        // Full screen video or app covers entire physical screen (visibleFrame == frame)
         let isFullScreen = (screen.visibleFrame == screen.frame)
 
         if isFullScreen && !isFullScreenAppActive {
@@ -287,6 +300,7 @@ public class WindowManager: ObservableObject {
         clickOutsideMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self = self, self.isExpanded, let window = self.window else { return }
 
+            if self.isPinned { return } // Do not auto-collapse when window is pinned open!
             if NSEvent.pressedMouseButtons != 0 || window.inLiveResize { return }
             if self.isSettingsPresented { return }
 
