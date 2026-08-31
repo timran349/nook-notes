@@ -20,7 +20,6 @@ public class WindowManager: ObservableObject {
                 expandPanel()
                 window?.level = .floating
             } else {
-                // When unpinned, immediately collapse if mouse is outside
                 let mouseLoc = NSEvent.mouseLocation
                 if let frame = window?.frame, !NSMouseInRect(mouseLoc, frame.insetBy(dx: -25, dy: -25), false) {
                     collapsePanel()
@@ -40,6 +39,7 @@ public class WindowManager: ObservableObject {
     private var localMouseMonitor: Any?
     private var clickOutsideMonitor: Any?
     private var isFullScreenAppActive: Bool = false
+    private var fullScreenCheckTimer: Timer?
 
     // Custom dragged position and size storage
     private var userExpandedOrigin: NSPoint?
@@ -122,7 +122,6 @@ public class WindowManager: ObservableObject {
     }
 
     public func collapsePanel() {
-        // If window is pinned open at top all the time, do not collapse!
         guard isExpanded && !isPinned else { return }
 
         if let currentFrame = window?.frame {
@@ -207,33 +206,45 @@ public class WindowManager: ObservableObject {
     }
 
     private func setupFullScreenDetector() {
-        NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.activeSpaceDidChangeNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
+        // Observe workspace active space, application activation, and screen changes
+        let center = NSWorkspace.shared.notificationCenter
+        center.addObserver(forName: NSWorkspace.activeSpaceDidChangeNotification, object: nil, queue: .main) { [weak self] _ in
+            self?.checkFullScreenState()
+        }
+        center.addObserver(forName: NSWorkspace.didActivateApplicationNotification, object: nil, queue: .main) { [weak self] _ in
             self?.checkFullScreenState()
         }
 
-        NSWorkspace.shared.notificationCenter.addObserver(
-            forName: NSWorkspace.didActivateApplicationNotification,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
+        // Lightweight periodic check (every 1 second) for browser full screen video playback
+        fullScreenCheckTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [weak self] _ in
             self?.checkFullScreenState()
         }
     }
 
     private func checkFullScreenState() {
-        guard let screen = window?.screen ?? NSScreen.main else { return }
-        let isFullScreen = (screen.visibleFrame == screen.frame)
+        guard let window = window else { return }
+        let activeApp = NSWorkspace.shared.frontmostApplication
+        let screen = window.screen ?? NSScreen.main ?? NSScreen.screens[0]
 
-        if isFullScreen && !isFullScreenAppActive {
-            isFullScreenAppActive = true
-            window?.orderOut(nil)
-        } else if !isFullScreen && isFullScreenAppActive {
-            isFullScreenAppActive = false
-            window?.orderFrontRegardless()
+        // 1. Menu Bar and Dock hidden (Full screen space active)
+        let isScreenFullScreen = (screen.visibleFrame.height == screen.frame.height) && (screen.visibleFrame.width == screen.frame.width)
+
+        // 2. Active app is running in full screen mode or auto-hiding menu bar (YouTube video in Safari/Chrome, VLC, QuickTime)
+        let options = activeApp?.presentationOptions ?? []
+        let isAppFullScreen = options.contains(.fullScreen) || options.contains(.autoHideMenuBar) || options.contains(.hideDock)
+
+        let isFullScreenMode = isScreenFullScreen || isAppFullScreen
+
+        if isFullScreenMode {
+            if !isFullScreenAppActive {
+                isFullScreenAppActive = true
+                window.orderOut(nil)
+            }
+        } else {
+            if isFullScreenAppActive {
+                isFullScreenAppActive = false
+                window.orderFrontRegardless()
+            }
         }
     }
 
@@ -280,7 +291,6 @@ public class WindowManager: ObservableObject {
                     }
                 }
             } else if !self.isPinned && !self.isSettingsPresented && !window.inLiveResize {
-                // When UNPINNED: automatically collapse/hide when cursor moves outside window zone!
                 let expandedHitZone = windowFrame.insetBy(dx: -30, dy: -30)
                 if !NSMouseInRect(mouseLoc, expandedHitZone, false) {
                     DispatchQueue.main.async {
@@ -318,7 +328,7 @@ public class WindowManager: ObservableObject {
         clickOutsideMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] _ in
             guard let self = self, self.isExpanded, let window = self.window else { return }
 
-            if self.isPinned { return } // Do not auto-collapse when window is pinned open!
+            if self.isPinned { return }
             if NSEvent.pressedMouseButtons != 0 || window.inLiveResize { return }
             if self.isSettingsPresented { return }
 
@@ -334,6 +344,7 @@ public class WindowManager: ObservableObject {
     }
 
     deinit {
+        fullScreenCheckTimer?.invalidate()
         if let monitor = globalMouseMonitor { NSEvent.removeMonitor(monitor) }
         if let monitor = localMouseMonitor { NSEvent.removeMonitor(monitor) }
         if let monitor = clickOutsideMonitor { NSEvent.removeMonitor(monitor) }
