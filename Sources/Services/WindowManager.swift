@@ -232,8 +232,8 @@ public class WindowManager: ObservableObject {
 
         // Full screen video or app is active when visibleFrame occupies physical screen bounds
         let isScreenFullScreen = (visibleHeight >= physicalHeight - 4.0) && (visibleWidth >= physicalWidth - 4.0)
-        let presentationOpts = NSApplication.shared.currentPresentationOptions
-        let isAppFullScreen = presentationOpts.contains(.fullScreen) || presentationOpts.contains(.autoHideMenuBar)
+        let systemOpts = NSApp.currentSystemPresentationOptions
+        let isAppFullScreen = systemOpts.contains(.autoHideMenuBar) || systemOpts.contains(.autoHideDock) || systemOpts.contains(.disableHideApplication)
 
         let isFullScreenMode = isScreenFullScreen || isAppFullScreen
 
