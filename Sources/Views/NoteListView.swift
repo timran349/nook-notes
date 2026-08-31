@@ -78,9 +78,14 @@ public struct NoteListView: View {
                                     showRenameAlert = true
                                 }
                             )
+                            .opacity(draggingNoteID == note.id ? 0.35 : 1.0)
+                            .scaleEffect(draggingNoteID == note.id ? 0.96 : 1.0)
                             .onDrag {
                                 self.draggingNoteID = note.id
                                 return NSItemProvider(object: note.id.uuidString as NSString)
+                            } preview: {
+                                // Transparent ghost preview to prevent duplicate floating image
+                                Color.clear.frame(width: 1, height: 1)
                             }
                             .onDrop(of: [.text], delegate: NoteDropDelegate(
                                 item: note,
@@ -92,6 +97,7 @@ public struct NoteListView: View {
                     .padding(.horizontal, 4)
                     .padding(.top, 2)
                     .padding(.bottom, 12)
+                    .animation(.spring(response: 0.24, dampingFraction: 0.82), value: noteStore.notes)
                 }
             }
         }
@@ -121,7 +127,7 @@ struct NoteDropDelegate: DropDelegate {
 
     func dropEntered(info: DropInfo) {
         guard let sourceID = draggingNoteID, sourceID != item.id else { return }
-        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+        withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
             noteStore.moveNote(from: sourceID, to: item.id)
         }
     }
@@ -129,4 +135,6 @@ struct NoteDropDelegate: DropDelegate {
     func dropUpdated(info: DropInfo) -> DropProposal? {
         return DropProposal(operation: .move)
     }
+
+    func dropExited(info: DropInfo) {}
 }
