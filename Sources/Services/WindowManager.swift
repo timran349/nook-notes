@@ -19,6 +19,12 @@ public class WindowManager: ObservableObject {
             if isPinned {
                 expandPanel()
                 window?.level = .floating
+            } else {
+                // When unpinned, immediately collapse if mouse is outside
+                let mouseLoc = NSEvent.mouseLocation
+                if let frame = window?.frame, !NSMouseInRect(mouseLoc, frame.insetBy(dx: -25, dy: -25), false) {
+                    collapsePanel()
+                }
             }
         }
     }
@@ -255,41 +261,53 @@ public class WindowManager: ObservableObject {
 
     private func setupMouseTracking() {
         globalMouseMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.mouseMoved]) { [weak self] _ in
-            guard let self = self, !self.isExpanded, let window = self.window else { return }
+            guard let self = self, let window = self.window else { return }
             let mouseLoc = NSEvent.mouseLocation
             let windowFrame = window.frame
 
-            let hoverZone = NSRect(
-                x: windowFrame.origin.x,
-                y: windowFrame.origin.y,
-                width: self.collapsedWidth + 25,
-                height: self.collapsedHeight + 25
-            )
+            if !self.isExpanded {
+                let hoverZone = NSRect(
+                    x: windowFrame.origin.x,
+                    y: windowFrame.origin.y,
+                    width: self.collapsedWidth + 25,
+                    height: self.collapsedHeight + 25
+                )
 
-            let hovering = NSMouseInRect(mouseLoc, hoverZone, false)
-            if self.isHovered != hovering {
-                DispatchQueue.main.async {
-                    self.isHovered = hovering
+                let hovering = NSMouseInRect(mouseLoc, hoverZone, false)
+                if self.isHovered != hovering {
+                    DispatchQueue.main.async {
+                        self.isHovered = hovering
+                    }
+                }
+            } else if !self.isPinned && !self.isSettingsPresented && !window.inLiveResize {
+                // When UNPINNED: automatically collapse/hide when cursor moves outside window zone!
+                let expandedHitZone = windowFrame.insetBy(dx: -30, dy: -30)
+                if !NSMouseInRect(mouseLoc, expandedHitZone, false) {
+                    DispatchQueue.main.async {
+                        self.collapsePanel()
+                    }
                 }
             }
         }
 
         localMouseMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved]) { [weak self] event in
-            guard let self = self, !self.isExpanded, let window = self.window else { return event }
+            guard let self = self, let window = self.window else { return event }
             let mouseLoc = NSEvent.mouseLocation
             let windowFrame = window.frame
 
-            let hoverZone = NSRect(
-                x: windowFrame.origin.x,
-                y: windowFrame.origin.y,
-                width: self.collapsedWidth + 25,
-                height: self.collapsedHeight + 25
-            )
+            if !self.isExpanded {
+                let hoverZone = NSRect(
+                    x: windowFrame.origin.x,
+                    y: windowFrame.origin.y,
+                    width: self.collapsedWidth + 25,
+                    height: self.collapsedHeight + 25
+                )
 
-            let hovering = NSMouseInRect(mouseLoc, hoverZone, false)
-            if self.isHovered != hovering {
-                DispatchQueue.main.async {
-                    self.isHovered = hovering
+                let hovering = NSMouseInRect(mouseLoc, hoverZone, false)
+                if self.isHovered != hovering {
+                    DispatchQueue.main.async {
+                        self.isHovered = hovering
+                    }
                 }
             }
             return event
