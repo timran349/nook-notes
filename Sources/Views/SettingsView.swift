@@ -8,7 +8,7 @@ public struct SettingsView: View {
 
     public var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack(spacing: 14) {
+            VStack(spacing: 16) {
                 // Header
                 HStack {
                     Text("Settings")
@@ -26,19 +26,53 @@ public struct SettingsView: View {
 
                 Divider().opacity(0.12)
 
-                // Screen Corner Picker
-                VStack(alignment: .leading, spacing: 6) {
+                // Visual Screen Corner Anchor Selector
+                VStack(alignment: .leading, spacing: 8) {
                     Text("SCREEN CORNER ANCHOR")
                         .font(.geist(10, weight: .bold))
                         .foregroundColor(.secondary.opacity(0.6))
 
-                    Picker("", selection: $windowManager.screenCorner) {
-                        Text("Bottom-Left").tag("bottom_left")
-                        Text("Bottom-Right").tag("bottom_right")
-                        Text("Top-Left").tag("top_left")
-                        Text("Top-Right").tag("top_right")
+                    // Desktop Screen Mockup Rectangle
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 14, style: .continuous)
+                            .fill(Color.primary.opacity(0.04))
+                            .frame(height: 110)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                                    .stroke(Color.primary.opacity(0.12), lineWidth: 1)
+                            )
+
+                        VStack {
+                            HStack {
+                                CornerOptionBox(
+                                    title: "Top-Left",
+                                    cornerID: "top_left",
+                                    selectedCorner: $windowManager.screenCorner
+                                )
+                                Spacer()
+                                CornerOptionBox(
+                                    title: "Top-Right",
+                                    cornerID: "top_right",
+                                    selectedCorner: $windowManager.screenCorner
+                                )
+                            }
+                            Spacer()
+                            HStack {
+                                CornerOptionBox(
+                                    title: "Bottom-Left",
+                                    cornerID: "bottom_left",
+                                    selectedCorner: $windowManager.screenCorner
+                                )
+                                Spacer()
+                                CornerOptionBox(
+                                    title: "Bottom-Right",
+                                    cornerID: "bottom_right",
+                                    selectedCorner: $windowManager.screenCorner
+                                )
+                            }
+                        }
+                        .padding(10)
                     }
-                    .pickerStyle(SegmentedPickerStyle())
                 }
 
                 // Appearance Picker
@@ -112,7 +146,7 @@ public struct SettingsView: View {
                     .foregroundColor(.secondary)
                 }
                 .buttonStyle(PlainButtonStyle())
-                .padding(.top, 4)
+                .padding(.top, 2)
 
                 // Quit App Button
                 Button(action: {
@@ -143,9 +177,46 @@ public struct SettingsView: View {
                         .font(.geist(9, weight: .regular))
                         .foregroundColor(.secondary.opacity(0.6))
                 }
-                .padding(.top, 4)
+                .padding(.top, 2)
             }
             .padding(16)
         }
+    }
+}
+
+// Custom visual corner button component inside mini screen rectangle
+struct CornerOptionBox: View {
+    let title: String
+    let cornerID: String
+    @Binding var selectedCorner: String
+
+    private var isSelected: Bool {
+        selectedCorner == cornerID
+    }
+
+    var body: some View {
+        Button(action: {
+            withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
+                selectedCorner = cornerID
+            }
+        }) {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(isSelected ? Color.white : Color.secondary.opacity(0.4))
+                    .frame(width: 6, height: 6)
+
+                Text(title)
+                    .font(.geist(11, weight: isSelected ? .bold : .medium))
+                    .foregroundColor(isSelected ? .white : .secondary)
+            }
+            .padding(.horizontal, 10)
+            .padding(.vertical, 6)
+            .background(
+                RoundedRectangle(cornerRadius: 8, style: .continuous)
+                    .fill(isSelected ? Color(red: 0.0, green: 0.48, blue: 1.0) : Color.primary.opacity(0.07))
+            )
+            .shadow(color: isSelected ? Color.blue.opacity(0.3) : Color.clear, radius: 4, x: 0, y: 2)
+        }
+        .buttonStyle(PlainButtonStyle())
     }
 }
