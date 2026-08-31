@@ -6,12 +6,25 @@ public struct NoteRowView: View {
     public let onSelect: () -> Void
     public let onDelete: () -> Void
     public let onRename: () -> Void
-    public let onDetach: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
     @State private var isHovered: Bool = false
     @State private var isPressed: Bool = false
     @State private var isExpanded: Bool = false
+
+    public init(
+        note: Note,
+        isSelected: Bool,
+        onSelect: @escaping () -> Void,
+        onDelete: @escaping () -> Void,
+        onRename: @escaping () -> Void
+    ) {
+        self.note = note
+        self.isSelected = isSelected
+        self.onSelect = onSelect
+        self.onDelete = onDelete
+        self.onRename = onRename
+    }
 
     private var cardBackground: Color {
         colorScheme == .dark
@@ -41,7 +54,7 @@ public struct NoteRowView: View {
             // Header Row: Title & Action
             HStack(alignment: .top) {
                 Text(note.displayTitle)
-                    .font(.geist(17, weight: .bold))
+                    .font(.geist(16, weight: .bold))
                     .foregroundColor(titleColor)
                     .lineLimit(isExpanded ? nil : 1)
 
@@ -95,12 +108,6 @@ public struct NoteRowView: View {
         .onTapGesture {
             onSelect()
         }
-        .simultaneousGesture(
-            DragGesture(minimumDistance: 15)
-                .onEnded { _ in
-                    onDetach()
-                }
-        )
         .onHover { hovering in
             withAnimation(.spring(response: 0.2, dampingFraction: 0.8)) {
                 isHovered = hovering
@@ -115,11 +122,11 @@ public struct NoteRowView: View {
             }) {
                 Label(isExpanded ? "Show Less" : "Show More", systemImage: isExpanded ? "chevron.up" : "chevron.down")
             }
-            Button(action: onDetach) {
-                Label(note.isDetached ? "Focus Floating Note" : "Stick on Desktop", systemImage: "pin")
-            }
             Button(action: onSelect) {
                 Label("Edit Note", systemImage: "pencil")
+            }
+            Button(action: onRename) {
+                Label("Rename", systemImage: "character.cursor.ibeam")
             }
             Divider()
             Button(role: .destructive, action: onDelete) {

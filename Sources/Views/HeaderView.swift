@@ -27,6 +27,22 @@ public struct HeaderView: View {
             : Color(red: 0.50, green: 0.49, blue: 0.51)
     }
 
+    private var layoutIconName: String {
+        switch noteStore.layoutMode {
+        case "grid2": return "square.grid.2x2.fill"
+        case "grid3": return "square.grid.3x3.fill"
+        default: return "square.grid.2x2"
+        }
+    }
+
+    private var layoutTooltip: String {
+        switch noteStore.layoutMode {
+        case "grid2": return "Layout: 2x2 Grid (Click for 3x3)"
+        case "grid3": return "Layout: 3x3 Grid (Click for List)"
+        default: return "Layout: List (Click for 2x2 Grid)"
+        }
+    }
+
     public var body: some View {
         HStack(alignment: .center) {
             if isEditing {
@@ -42,10 +58,23 @@ public struct HeaderView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
             } else {
+                // Interactive Grid/List Layout Mode Toggle + Logo
                 HStack(spacing: 8) {
-                    Image(systemName: "square.grid.2x2")
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(headerIconColor)
+                    Button(action: {
+                        withAnimation(.spring(response: 0.24, dampingFraction: 0.82)) {
+                            switch noteStore.layoutMode {
+                            case "list": noteStore.layoutMode = "grid2"
+                            case "grid2": noteStore.layoutMode = "grid3"
+                            default: noteStore.layoutMode = "list"
+                            }
+                        }
+                    }) {
+                        Image(systemName: layoutIconName)
+                            .font(.system(size: 18, weight: .medium))
+                            .foregroundColor(headerIconColor)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .help(layoutTooltip)
 
                     Text("nook notes")
                         .font(.system(size: 21, weight: .bold, design: .serif))

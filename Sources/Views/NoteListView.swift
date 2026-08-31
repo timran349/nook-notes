@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 public struct NoteListView: View {
     @ObservedObject var noteStore: NoteStore
@@ -7,6 +8,19 @@ public struct NoteListView: View {
     @State private var noteToRename: Note?
     @State private var renameText: String = ""
     @State private var showRenameAlert: Bool = false
+
+    @State private var draggingNoteID: UUID?
+
+    private var columns: [GridItem] {
+        switch noteStore.layoutMode {
+        case "grid2":
+            return [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)]
+        case "grid3":
+            return [GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6), GridItem(.flexible(), spacing: 6)]
+        default:
+            return [GridItem(.flexible(), spacing: 4)]
+        }
+    }
 
     public var body: some View {
         Group {
@@ -44,7 +58,7 @@ public struct NoteListView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 4) {
+                    LazyVGrid(columns: columns, spacing: 4) {
                         ForEach(noteStore.filteredNotes) { note in
                             NoteRowView(
                                 note: note,
@@ -62,11 +76,17 @@ public struct NoteListView: View {
                                     noteToRename = note
                                     renameText = note.title
                                     showRenameAlert = true
-                                },
-                                onDetach: {
-                                    DetachedStickyManager.shared.detachNote(note, noteStore: noteStore)
                                 }
                             )
+                            .onDrag {
+                                self.draggingNoteID = note.id
+                                return NSItemProvider(object: note.id.uuidString as NSString)
+                            }
+                            .onDrop(of: [.text], delegate: NoteDropDelegate(
+                                item: note,
+                                noteStore: noteStore,
+                                draggingNoteID: $draggingNoteID
+                            ))
                         }
                     }
                     .padding(.horizontal, 4)
@@ -85,5 +105,28 @@ public struct NoteListView: View {
                 }
             }
         }
+    }
+}
+
+// Drop Delegate for live drag & drop note reordering
+struct NoteDropDelegate: DropDelegate {
+    let item: Note
+    let noteStore: NoteStore
+    @Binding var draggingNoteID: UUID?
+
+    func performDrop(info: DropInfo) -> Bool {
+        draggingNoteID = nil
+        return true
+    }
+
+    func dropEntered(info: DropInfo) {
+        guard let sourceID = draggingNoteID, sourceID != item.id else { return }
+        withAnimation(.spring(response: 0.22, dampingFraction: 0.8)) {
+            noteStore.moveNote(from: sourceID, to: item.id)
+        }
+    }
+
+    func dropUpdated(info: DropInfo) -> DropProposal? {
+        return DropProposal(operation: .move)
     }
 }

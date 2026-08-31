@@ -25,34 +25,6 @@ public struct NoteEditorView: View {
 
     public var body: some View {
         VStack(spacing: 8) {
-            // Pin & options toolbar
-            HStack {
-                Spacer()
-
-                // Stick on Desktop button
-                Button(action: {
-                    DetachedStickyManager.shared.detachNote(note, noteStore: noteStore)
-                }) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "pin.fill")
-                            .font(.system(size: 10, weight: .bold))
-                        Text(note.isDetached ? "Floating Sticky" : "Stick on Desktop")
-                            .font(.geist(11, weight: .medium))
-                    }
-                    .foregroundColor(.primary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(
-                        RoundedRectangle(cornerRadius: 8, style: .continuous)
-                            .fill(Color.primary.opacity(0.06))
-                    )
-                }
-                .buttonStyle(PlainButtonStyle())
-                .help("Detach as floating sticky note on desktop")
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
-
             // Geist Title Field
             TextField("Title (optional)", text: Binding(
                 get: { note.title },
@@ -65,6 +37,7 @@ public struct NoteEditorView: View {
             .textFieldStyle(PlainTextFieldStyle())
             .focused($isTitleFocused)
             .padding(.horizontal, 16)
+            .padding(.top, 14)
 
             Divider()
                 .opacity(0.1)
@@ -89,7 +62,7 @@ public struct NoteEditorView: View {
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .fill(paperColor)
         )
-        .padding(8)
+        .padding(4)
         .onAppear {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 isContentFocused = true
